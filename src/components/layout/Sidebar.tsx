@@ -1,11 +1,5 @@
 import { Pressable, Text, View } from "react-native";
-import {
-  Building2,
-  ChevronDown,
-  ChevronRight,
-  LogOut,
-  X,
-} from "lucide-react-native";
+import { Building2, ChevronDown, LogOut } from "lucide-react-native";
 import { font } from "@/constants/fonts";
 import { palette, iconSizes, layout } from "@/constants/theme";
 import { APP } from "@/constants/strings";
@@ -20,7 +14,7 @@ interface Props {
   userRole: string;
   avatarColor: string;
   onSignOut: () => void;
-  collapsed?: boolean;
+  variant?: "rail" | "drawer";
 }
 
 export function Sidebar({
@@ -31,27 +25,65 @@ export function Sidebar({
   userRole,
   avatarColor,
   onSignOut,
-  collapsed = false,
+  variant = "rail",
 }: Props) {
-  const width = collapsed ? layout.sidebarCollapsed : layout.sidebarWidth;
+  const isRail = variant === "rail";
+  const width = isRail ? layout.sidebarWidth : layout.sidebarDrawerWidth;
 
   return (
     <View
-      style={{ width, backgroundColor: palette.sidebar }}
-      className="border-r border-sidebar-border"
+      style={{
+        width,
+        backgroundColor: palette.sidebar,
+        ...(isRail
+          ? {
+              flexGrow: 0,
+              flexShrink: 0,
+              maxWidth: width,
+              minWidth: width,
+              alignSelf: "stretch",
+            }
+          : { flex: 1 }),
+      }}
+      className={`border-r border-sidebar-border ${isRail ? "h-full" : ""}`}
     >
-      <View className="flex-row items-center gap-2 border-b border-sidebar-border px-4 py-5">
-        <View className="h-9 w-9 items-center justify-center rounded-lg bg-primary">
-          <Building2 size={iconSizes.md} color={palette.textInverse} />
+      <View
+        className={`flex-row items-center border-b border-sidebar-border ${
+          isRail ? "gap-2 px-3 py-3" : "gap-3 px-5 py-5"
+        }`}
+      >
+        <View
+          className={`items-center justify-center rounded-lg bg-primary ${
+            isRail ? "h-8 w-8 rounded-lg" : "h-10 w-10 rounded-xl"
+          }`}
+        >
+          <Building2 size={isRail ? iconSizes.sm : iconSizes.md} color={palette.textInverse} />
         </View>
-        {!collapsed ? (
-          <Text style={{ fontFamily: font.bold }} className="text-lg text-textInverse">
+        <View className="min-w-0 flex-1">
+          <Text
+            style={{ fontFamily: font.bold }}
+            className={isRail ? "text-base text-text" : "text-lg text-text"}
+            numberOfLines={1}
+          >
             {APP.name}
           </Text>
-        ) : null}
+          {!isRail ? (
+            <Text style={{ fontFamily: font.regular }} className="text-xs text-textSubtle">
+              Workspace
+            </Text>
+          ) : null}
+        </View>
       </View>
 
-      <View className="flex-1 px-2 py-3">
+      <View className={`flex-1 ${isRail ? "px-2 py-3" : "px-3 py-4"}`}>
+        {!isRail ? (
+          <Text
+            style={{ fontFamily: font.semibold }}
+            className="mb-2 px-3 text-[11px] uppercase tracking-wider text-textSubtle"
+          >
+            Menu
+          </Text>
+        ) : null}
         {items.map((item) => {
           const active = activeId === item.id;
           const Icon = item.icon;
@@ -59,84 +91,89 @@ export function Sidebar({
             <View key={item.id} className="mb-0.5">
               <Pressable
                 onPress={() => onNavigate(item.id)}
-                className="flex-row items-center rounded-md px-3 py-2.5 active:opacity-90"
+                className={`flex-row items-center rounded-lg active:opacity-90 ${
+                  isRail ? "px-2 py-2" : "px-3 py-2.5"
+                }`}
                 style={{
                   backgroundColor: active ? palette.sidebarActive : "transparent",
-                  borderLeftWidth: active ? 3 : 0,
-                  borderLeftColor: active ? palette.primary : "transparent",
                 }}
               >
-                <Icon
-                  size={iconSizes.sm}
-                  color={active ? palette.sidebarTextActive : palette.sidebarText}
-                />
-                {!collapsed ? (
-                  <>
-                    <Text
-                      style={{ fontFamily: font.medium }}
-                      className={`ml-3 flex-1 text-sm ${
-                        active ? "text-textInverse" : "text-sidebar-text"
-                      }`}
-                    >
-                      {item.label}
-                    </Text>
-                    {item.children ? (
-                      <ChevronDown
-                        size={14}
-                        color={active ? palette.sidebarTextActive : palette.sidebarText}
-                      />
-                    ) : null}
-                  </>
+                <View
+                  className={`items-center justify-center rounded-md ${
+                    isRail ? "h-7 w-7" : "h-8 w-8"
+                  }`}
+                  style={{
+                    backgroundColor: active ? palette.primarySoft : "transparent",
+                  }}
+                >
+                  <Icon
+                    size={isRail ? 15 : iconSizes.sm}
+                    color={active ? palette.primary : palette.sidebarText}
+                  />
+                </View>
+                <Text
+                  style={{ fontFamily: active ? font.semibold : font.medium }}
+                  className={`ml-2 flex-1 ${isRail ? "text-xs" : "text-sm"} ${
+                    active ? "text-sidebar-textActive" : "text-sidebar-text"
+                  }`}
+                  numberOfLines={1}
+                >
+                  {item.label}
+                </Text>
+                {item.children && !isRail ? (
+                  <ChevronDown
+                    size={14}
+                    color={active ? palette.primary : palette.textSubtle}
+                  />
                 ) : null}
               </Pressable>
-              {active && item.children && !collapsed ? (
-                <View className="ml-9 mt-0.5 mb-1">
-                  {item.children.map((child, idx) => (
-                    <Pressable
-                      key={`${child.id}-${idx}`}
-                      onPress={() => onNavigate(item.id)}
-                      className="flex-row items-center py-1.5"
-                    >
-                      <ChevronRight size={12} color={palette.sidebarText} />
-                      <Text
-                        style={{ fontFamily: font.regular }}
-                        className="ml-1 text-xs text-sidebar-text"
-                      >
-                        {child.label}
-                      </Text>
-                    </Pressable>
-                  ))}
-                </View>
-              ) : null}
             </View>
           );
         })}
       </View>
 
-      <View className="border-t border-sidebar-border p-3">
-        <View className="flex-row items-center rounded-lg bg-sidebar-hover px-2 py-2">
+      <View className={`border-t border-sidebar-border ${isRail ? "p-2.5" : "p-4"}`}>
+        <View
+          className={`flex-row items-center rounded-lg border border-border bg-surfaceMuted ${
+            isRail ? "px-2 py-2" : "rounded-xl px-3 py-3"
+          }`}
+        >
           <Avatar name={userName} color={avatarColor} size="sm" />
-          {!collapsed ? (
-            <View className="ml-2 flex-1">
-              <Text style={{ fontFamily: font.semibold }} className="text-sm text-textInverse">
-                {userName}
-              </Text>
-              <Text style={{ fontFamily: font.regular }} className="text-xs text-sidebar-text">
-                {userRole}
-              </Text>
-            </View>
-          ) : null}
-          {!collapsed ? (
-            <Pressable onPress={onSignOut} hitSlop={8}>
-              <X size={16} color={palette.sidebarText} />
-            </Pressable>
-          ) : null}
+          <View className="ml-2 min-w-0 flex-1">
+            <Text
+              style={{ fontFamily: font.semibold }}
+              className="text-xs text-text"
+              numberOfLines={1}
+            >
+              {userName}
+            </Text>
+            <Text
+              style={{ fontFamily: font.regular }}
+              className="text-[10px] text-textMuted"
+              numberOfLines={1}
+            >
+              {userRole}
+            </Text>
+          </View>
         </View>
-        {collapsed ? (
-          <Pressable onPress={onSignOut} className="mt-2 items-center py-2">
-            <LogOut size={iconSizes.sm} color={palette.sidebarText} />
-          </Pressable>
-        ) : null}
+        <Pressable
+          onPress={onSignOut}
+          className={`mt-2 flex-row items-center justify-center rounded-lg border border-border active:bg-surfaceMuted ${
+            isRail ? "py-2" : "py-2.5"
+          }`}
+          accessibilityLabel="Sign out"
+        >
+          <LogOut size={isRail ? 14 : iconSizes.sm} color={palette.textMuted} />
+          {!isRail ? (
+            <Text style={{ fontFamily: font.medium }} className="ml-2 text-sm text-textMuted">
+              Sign out
+            </Text>
+          ) : (
+            <Text style={{ fontFamily: font.medium }} className="ml-1.5 text-xs text-textMuted">
+              Out
+            </Text>
+          )}
+        </Pressable>
       </View>
     </View>
   );

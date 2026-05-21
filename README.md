@@ -1,6 +1,8 @@
 # HRMS Pro
 
-HRMS built with **Expo / React Native** and a **Node.js + PostgreSQL + Sequelize** API. Admin and employee panels share one design system; clicks drive real API operations (leave, attendance, payroll, notifications, employees).
+**Version `2.0.0-web`** — Web-first HRMS with **Expo / React Native Web** and a **Node.js + PostgreSQL** API.
+
+See [docs/PROJECT_VERSION.md](docs/PROJECT_VERSION.md) for a senior-level assessment and [docs/UI_ARCHITECTURE.md](docs/UI_ARCHITECTURE.md) for the UI layout model.
 
 ---
 
@@ -24,12 +26,14 @@ npm run server:dev
 
 API runs at `http://localhost:3001`.
 
-### 3. Mobile / web app
+### 3. Web app (primary)
 
 ```bash
 npm install
-npx expo start
+npm run web
 ```
+
+Or `npx expo start` then press `w` for web. Mobile (`a` / `i`) is supported but secondary.
 
 **Demo logins**
 

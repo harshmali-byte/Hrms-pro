@@ -1,58 +1,60 @@
 /**
- * Design tokens — HRMS reference (dark sidebar + light canvas).
+ * Organiq Web — design tokens (web-first, light shell).
  */
 
 const colors = {
   primary: {
-    DEFAULT: "#4F6BED",
-    soft: "#E8EEFF",
-    dark: "#3D56C4",
+    DEFAULT: "#0D9488",
+    soft: "#CCFBF1",
+    dark: "#0F766E",
   },
-  accent: "#4F6BED",
+  accent: "#0D9488",
 
-  background: "#F0F2F5",
+  background: "#F8FAFC",
   surface: "#FFFFFF",
-  surfaceMuted: "#F4F6F8",
+  surfaceMuted: "#F1F5F9",
+  surfaceElevated: "#FFFFFF",
 
   sidebar: {
-    DEFAULT: "#1B2531",
-    hover: "#243040",
-    active: "#2A3544",
-    border: "#2D3A4A",
-    text: "#94A3B8",
-    textActive: "#FFFFFF",
-    accent: "#4F6BED",
+    DEFAULT: "#FFFFFF",
+    hover: "#F8FAFC",
+    active: "#F0FDFA",
+    border: "#E2E8F0",
+    text: "#64748B",
+    textActive: "#0F766E",
+    accent: "#0D9488",
   },
 
-  text: "#1E293B",
-  textMuted: "#64748B",
+  text: "#0F172A",
+  textMuted: "#475569",
   textSubtle: "#94A3B8",
   textInverse: "#FFFFFF",
 
   border: "#E2E8F0",
   borderStrong: "#CBD5E1",
 
-  success: { DEFAULT: "#10B981", soft: "#ECFDF5" },
-  warning: { DEFAULT: "#F59E0B", soft: "#FFFBEB" },
-  danger: { DEFAULT: "#EF4444", soft: "#FEF2F2" },
-  info: { DEFAULT: "#3B82F6", soft: "#EFF6FF" },
+  success: { DEFAULT: "#059669", soft: "#ECFDF5" },
+  warning: { DEFAULT: "#D97706", soft: "#FFFBEB" },
+  danger: { DEFAULT: "#DC2626", soft: "#FEF2F2" },
+  info: { DEFAULT: "#0284C7", soft: "#F0F9FF" },
 
   chart: {
-    blue: "#4F6BED",
+    blue: "#0EA5E9",
     green: "#10B981",
     orange: "#F97316",
     purple: "#8B5CF6",
     slate: "#64748B",
+    teal: "#14B8A6",
   },
 };
 
 const radius = {
   none: "0px",
   sm: "6px",
-  md: "8px",
-  lg: "12px",
-  xl: "16px",
-  "2xl": "20px",
+  md: "10px",
+  lg: "14px",
+  xl: "18px",
+  "2xl": "24px",
   full: "9999px",
 };
 
@@ -78,13 +80,13 @@ const spacing = {
 };
 
 const fontSize = {
-  xs: ["12px", { lineHeight: "16px" }],
-  sm: ["14px", { lineHeight: "20px" }],
-  base: ["16px", { lineHeight: "24px" }],
-  lg: ["18px", { lineHeight: "26px", letterSpacing: "-0.01em" }],
+  xs: ["12px", { lineHeight: "18px" }],
+  sm: ["14px", { lineHeight: "22px" }],
+  base: ["15px", { lineHeight: "24px" }],
+  lg: ["17px", { lineHeight: "26px", letterSpacing: "-0.01em" }],
   xl: ["20px", { lineHeight: "28px", letterSpacing: "-0.015em" }],
   "2xl": ["24px", { lineHeight: "32px", letterSpacing: "-0.02em" }],
-  "3xl": ["30px", { lineHeight: "38px", letterSpacing: "-0.02em" }],
+  "3xl": ["30px", { lineHeight: "38px", letterSpacing: "-0.025em" }],
 };
 
 const letterSpacing = {
@@ -94,4 +96,10 @@ const letterSpacing = {
   wide: "0.02em",
 };
 
-module.exports = { colors, radius, spacing, fontSize, letterSpacing };
+const boxShadow = {
+  card: "0 1px 3px 0 rgb(15 23 42 / 0.06), 0 1px 2px -1px rgb(15 23 42 / 0.06)",
+  cardHover: "0 4px 12px -2px rgb(15 23 42 / 0.08)",
+  shell: "0 1px 0 0 rgb(15 23 42 / 0.05)",
+};
+
+module.exports = { colors, radius, spacing, fontSize, letterSpacing, boxShadow };

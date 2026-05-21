@@ -16,15 +16,15 @@ const variants: Record<NonNullable<Props["variant"]>, string> = {
   outline: "bg-transparent border border-border",
 };
 
-const shadowStyle = Platform.select({
+const nativeShadow = Platform.select({
   ios: {
     shadowColor: palette.shadow,
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 1,
-    shadowRadius: 12,
+    shadowRadius: 8,
   },
   android: { elevation: 2 },
-  default: {},
+  default: undefined,
 });
 
 export function Card({
@@ -36,12 +36,13 @@ export function Card({
   style,
   ...rest
 }: Props) {
-  const padding = padded ? "p-5" : "";
-  const elevation = variant === "default" && elevated ? shadowStyle : undefined;
+  const padding = padded ? "p-5 md:p-6" : "";
+  const webShadow = Platform.OS === "web" && elevated && variant === "default" ? "shadow-card" : "";
+  const elevation = Platform.OS !== "web" && elevated && variant === "default" ? nativeShadow : undefined;
 
   return (
     <View
-      className={`${variants[variant]} rounded-xl ${padding} ${className}`}
+      className={`${variants[variant]} rounded-xl md:rounded-2xl ${padding} ${webShadow} ${className}`}
       style={[elevation, style]}
       {...rest}
     >

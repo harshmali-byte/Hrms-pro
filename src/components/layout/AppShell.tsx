@@ -1,11 +1,14 @@
-import { ReactNode } from "react";
-import { ActivityIndicator, ScrollView, Text, useWindowDimensions, View } from "react-native";
+import { ReactNode, useState } from "react";
+import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { font } from "@/constants/fonts";
-import { palette } from "@/constants/theme";
+import { palette, layout } from "@/constants/theme";
 import { useHrmsData } from "@/context/HrmsDataContext";
+import { useResponsive } from "@/hooks/useResponsive";
+import { Page } from "@/components/ui/Page";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
+import { MobileNavDrawer } from "./MobileNavDrawer";
 import type { ShellNavItem } from "@/navigation/shellNav";
 
 interface Props {
@@ -32,13 +35,81 @@ export function AppShell({
   children,
 }: Props) {
   const { isReady, apiError } = useHrmsData();
-  const { width } = useWindowDimensions();
-  const collapsed = width < 900;
+  const { showSidebar, useDrawer, contentPadding, isDesktop } = useResponsive();
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
     <SafeAreaView edges={["top", "bottom"]} className="flex-1 bg-background">
-      <View className="flex-1 flex-row">
-        <Sidebar
+      <View className="min-h-full flex-1 flex-row">
+        {showSidebar ? (
+          <View
+            className="h-full shrink-0 grow-0"
+            style={{
+              width: layout.sidebarWidth,
+              maxWidth: layout.sidebarWidth,
+              minWidth: layout.sidebarWidth,
+            }}
+          >
+            <Sidebar
+              items={navItems}
+              activeId={activeId}
+              onNavigate={onNavigate}
+              userName={userName}
+              userRole={userRole}
+              avatarColor={avatarColor}
+              onSignOut={onSignOut}
+              variant="rail"
+            />
+          </View>
+        ) : null}
+
+        <View className="min-w-0 flex-1">
+          <TopBar
+            title={pageTitle}
+            userName={userName}
+            avatarColor={avatarColor}
+            onMenuPress={useDrawer ? () => setDrawerOpen(true) : undefined}
+          />
+
+          {apiError ? (
+            <View className="border-b border-danger/20 bg-danger-soft px-4 py-2.5 md:px-7">
+              <Text style={{ fontFamily: font.medium }} className="text-sm text-danger">
+                {apiError} — Run `npm run server:dev` and `npm run server:seed`.
+              </Text>
+            </View>
+          ) : null}
+
+          {!isReady ? (
+            <View className="flex-1 items-center justify-center py-24">
+              <ActivityIndicator size="large" color={palette.primary} />
+              <Text style={{ fontFamily: font.medium }} className="mt-4 text-sm text-textMuted">
+                Loading workspace…
+              </Text>
+            </View>
+          ) : (
+            <ScrollView
+              className="flex-1 bg-background"
+              contentContainerStyle={{
+                paddingHorizontal: contentPadding,
+                paddingTop: isDesktop ? 24 : 16,
+                paddingBottom: 40,
+                alignItems: "center",
+              }}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+            >
+              <View style={{ width: "100%", maxWidth: layout.contentMaxWidth }}>
+                <Page>{children}</Page>
+              </View>
+            </ScrollView>
+          )}
+        </View>
+      </View>
+
+      {useDrawer ? (
+        <MobileNavDrawer
+          visible={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
           items={navItems}
           activeId={activeId}
           onNavigate={onNavigate}
@@ -46,36 +117,8 @@ export function AppShell({
           userRole={userRole}
           avatarColor={avatarColor}
           onSignOut={onSignOut}
-          collapsed={collapsed}
         />
-        <View className="min-w-0 flex-1">
-          <TopBar title={pageTitle} userName={userName} avatarColor={avatarColor} />
-          {apiError ? (
-            <View className="border-b border-danger/30 bg-danger/10 px-4 py-2">
-              <Text style={{ fontFamily: font.medium }} className="text-xs text-danger">
-                API: {apiError}. Start PostgreSQL and run `npm run server:seed` in the project root.
-              </Text>
-            </View>
-          ) : null}
-          {!isReady ? (
-            <View className="flex-1 items-center justify-center">
-              <ActivityIndicator size="large" color={palette.primary} />
-              <Text style={{ fontFamily: font.medium }} className="mt-3 text-sm text-textMuted">
-                Loading workspace…
-              </Text>
-            </View>
-          ) : (
-            <ScrollView
-              className="flex-1 bg-background"
-              contentContainerClassName="p-4 pb-10 md:p-5"
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-            >
-              {children}
-            </ScrollView>
-          )}
-        </View>
-      </View>
+      ) : null}
     </SafeAreaView>
   );
 }

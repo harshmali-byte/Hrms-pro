@@ -8,6 +8,7 @@ import { HelpBanner } from "@/components/ui/HelpBanner";
 import { DonutChart } from "@/components/charts/DonutChart";
 import { LineChart } from "@/components/charts/LineChart";
 import { Divider } from "@/components/ui/Divider";
+import { ContentGrid } from "@/components/ui/Page";
 import { useHrmsData } from "@/context/HrmsDataContext";
 
 interface Props {
@@ -31,7 +32,7 @@ export function AdminDashboard({ onNavigatePeople, onNavigateRequests }: Props) 
     <View>
       <HelpBanner text="Summary updates live from personnel and leave data. Use the sidebar to open each module." />
 
-      <View className="flex-row flex-wrap gap-4">
+      <ContentGrid columns={4} gap={4}>
         <DashboardKpiCard
           label="Total Employees"
           value={s.totalEmployees}
@@ -62,7 +63,7 @@ export function AdminDashboard({ onNavigatePeople, onNavigateRequests }: Props) 
           icon={TrendingUp}
           onPress={onNavigatePeople}
         />
-      </View>
+      </ContentGrid>
 
       {pendingLeaveCount > 0 ? (
         <Pressable
