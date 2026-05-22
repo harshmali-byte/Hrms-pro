@@ -10,6 +10,8 @@ export const APP = {
 
 export const AUTH = {
   welcome: `Welcome to ${ASQUARIFY.displayName}`,
+  welcomeBack: "Welcome back!",
+  welcomeSub: "Glad to see you again. Please sign in to continue.",
   subtitle: `${ASQUARIFY.headquarters} · Est. ${ASQUARIFY.founded}`,
   email: "Work email",
   password: "Password",
@@ -17,8 +19,12 @@ export const AUTH = {
   selectRole: "Continue as",
   employee: "Employee",
   admin: "Admin",
+  rememberMe: "Remember me",
+  orContinueWith: "or continue with",
   demoHint: `Employee: ${DEMO_LOGINS.employee} · Admin: ${DEMO_LOGINS.admin} · Password: ${DEMO_LOGINS.password}`,
   forgotPassword: "Forgot password?",
+  poweredBy: `Powered by ${ASQUARIFY.legalName}`,
+  appVersion: "Version 1.0.0",
 };
 
 export const COMMON = {
