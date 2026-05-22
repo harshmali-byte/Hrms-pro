@@ -67,6 +67,7 @@ const toneFg: Record<DashboardWidgetTone, string> = {
 interface Props {
   widgets: DashboardWidget[];
   onAction?: (target: string) => void;
+  onWidgetPress?: (widget: DashboardWidget) => void;
 }
 
 function WidgetCard({
@@ -140,22 +141,19 @@ function WidgetCard({
   );
 }
 
-export function DashboardWidgetGrid({ widgets, onAction }: Props) {
+export function DashboardWidgetGrid({ widgets, onAction, onWidgetPress }: Props) {
   if (!widgets.length) return null;
 
   return (
     <View className="mb-5 flex-row flex-wrap gap-3">
-      {widgets.map((w) => (
-        <WidgetCard
-          key={w.id}
-          widget={w}
-          onPress={
-            w.action?.type === "navigate" && w.action.target
-              ? () => onAction?.(w.action!.target)
-              : undefined
-          }
-        />
-      ))}
+      {widgets.map((w) => {
+        const nav =
+          w.action?.type === "navigate" && w.action.target
+            ? () => onAction?.(w.action!.target)
+            : undefined;
+        const onPress = onWidgetPress ? () => onWidgetPress(w) : nav;
+        return <WidgetCard key={w.id} widget={w} onPress={onPress} />;
+      })}
     </View>
   );
 }

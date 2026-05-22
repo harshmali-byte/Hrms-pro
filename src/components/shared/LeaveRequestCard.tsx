@@ -25,7 +25,10 @@ interface Props {
   showActions?: boolean;
   onApprove?: (id: string) => void;
   onReject?: (id: string) => void;
+  onCancel?: (id: string) => void;
   showEmployee?: boolean;
+  detailInSheet?: boolean;
+  onOpenDetail?: (request: LeaveRequest) => void;
 }
 
 function detailMessage(r: LeaveRequest, showEmployee: boolean) {
@@ -45,9 +48,16 @@ export function LeaveRequestCard({
   showActions = false,
   onApprove,
   onReject,
+  onCancel,
   showEmployee = false,
+  detailInSheet = false,
+  onOpenDetail,
 }: Props) {
   const showDetail = () => {
+    if (onOpenDetail) {
+      onOpenDetail(request);
+      return;
+    }
     Alert.alert("Leave request", detailMessage(request, showEmployee));
   };
 
@@ -55,6 +65,7 @@ export function LeaveRequestCard({
     <Card elevated={false}>
       <Pressable
         onPress={showDetail}
+        disabled={detailInSheet && !onOpenDetail}
         accessibilityRole="button"
         accessibilityLabel="View leave request details"
       >
@@ -117,6 +128,18 @@ export function LeaveRequestCard({
               onPress={() => onApprove?.(request.id)}
             />
           </View>
+        </View>
+      ) : null}
+
+      {onCancel && request.status === "pending" ? (
+        <View className="mt-3">
+          <Button
+            label="Withdraw request"
+            variant="ghost"
+            size="sm"
+            fullWidth
+            onPress={() => onCancel(request.id)}
+          />
         </View>
       ) : null}
     </Card>

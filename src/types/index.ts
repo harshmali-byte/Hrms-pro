@@ -44,8 +44,8 @@ export interface AttendanceRecord {
 
 export interface DashboardCharts {
   departmentEngagement: { label: string; value: number; color: string }[];
-  upcomingEvents: { id: string; title: string; when: string }[];
-  noticeBoard: { id: string; title: string; date: string }[];
+  upcomingEvents: { id: string; title: string; when: string; description?: string }[];
+  noticeBoard: { id: string; title: string; date: string; description?: string }[];
   attendanceTrend?: {
     labels: string[];
     present: number[];

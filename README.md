@@ -86,6 +86,47 @@ Backend v2 adds: services layer, global error handling, RBAC permissions, role-s
 | POST | `/api/employees` | Add employee (admin) |
 | POST | `/api/payroll/advance` | Payroll checklist (admin) |
 | POST | `/api/admin/reset-demo` | Re-seed database (admin) |
+| GET | `/api/hubstaff/summary` | Live Hubstaff metrics for logged-in user |
+
+---
+
+## Hubstaff (real-time sync)
+
+The Hubstaff widget can read **live** time from the Hubstaff Time Tracking API v2 instead of estimating from HRMS clock punches.
+
+### Why you saw `0m` while Hubstaff desktop showed ~54m
+
+The desktop app tracks independently. Until the API is connected, the HRMS card only mirrored **HRMS clock-in** segments — if you had not clocked in inside HRMS, it showed `0m` even while Hubstaff was running.
+
+### Setup (one-time)
+
+1. Open [Hubstaff Personal Access Tokens](https://developer.hubstaff.com/personal_access_tokens) and create a token (manager/owner role recommended).
+2. Copy the **refresh token** into `server/.env`:
+
+```env
+HUBSTAFF_REFRESH_TOKEN=your_refresh_token_here
+# optional if you have multiple orgs:
+HUBSTAFF_ORG_ID=123456
+```
+
+3. Restart the API: `npm run server:dev`
+4. Use the **same work email** in Hubstaff as in HRMS (e.g. `harsh.mali@asquarify.co`).
+
+### How “real-time” works
+
+| Layer | Behavior |
+| ----- | -------- |
+| **Hubstaff desktop** | Tracks project/time locally (e.g. “Asquarify's Project”). |
+| **HRMS API** | Polls Hubstaff every **30s** (`/api/hubstaff/summary`), caches ~25s server-side. |
+| **HRMS UI** | Refreshes the card on that interval; shows **Tracking** when Hubstaff reports a recent activity slot. |
+
+For faster updates, lower `pollIntervalMs` in the API response or add [Hubstaff webhooks](https://support.hubstaff.com/time-tracking-api/) later to push events instead of polling.
+
+### Optional next steps
+
+- **OAuth app** — Let each org connect Hubstaff without a shared PAT ([developer apps](https://developer.hubstaff.com/apps)).
+- **Webhooks** — `POST` to your server when time entries change (near real-time, no 30s poll).
+- **Admin view** — Team “23 clocked in” from `/api/dashboard/clocked-in` + Hubstaff org activities.
 
 ---
 

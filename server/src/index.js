@@ -16,6 +16,7 @@ import adminRoutes from "./routes/admin.js";
 import configRoutes from "./routes/config.js";
 import contentRoutes from "./routes/content.js";
 import accountRoutes from "./routes/account.js";
+import hubstaffRoutes from "./routes/hubstaff.js";
 
 const app = express();
 const port = Number(process.env.PORT) || 3001;
@@ -44,6 +45,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/config", configRoutes);
 app.use("/api/content", contentRoutes);
 app.use("/api/account", accountRoutes);
+app.use("/api/hubstaff", hubstaffRoutes);
 
 app.use(errorHandler);
 

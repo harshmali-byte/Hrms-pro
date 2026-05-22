@@ -136,6 +136,10 @@ export async function fetchDashboardWidgets(): Promise<DashboardWidgetsResponse>
   return apiFetch<DashboardWidgetsResponse>("/dashboard/widgets");
 }
 
+export async function fetchClockedInToday(): Promise<{ employees: Employee[] }> {
+  return apiFetch<{ employees: Employee[] }>("/dashboard/clocked-in");
+}
+
 export async function fetchDepartments(): Promise<DepartmentStat[]> {
   return apiFetch<DepartmentStat[]>("/employees/departments");
 }
@@ -152,7 +156,12 @@ export function computeDashboardStats(
   const onLeave = employees.filter((e) => e.status === "onLeave").length;
   const active = employees.filter((e) => e.status === "active").length;
   const probation = employees.filter((e) => e.status === "probation").length;
-  const newJoiners = Math.max(1, Math.floor(total * 0.026));
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 60);
+  const newJoiners = employees.filter((e) => {
+    const d = new Date(e.joinedOn);
+    return !Number.isNaN(d.getTime()) && d >= cutoff;
+  }).length;
   const pending = leaveRequests.filter((r) => r.status === "pending").length;
 
   return {
@@ -183,8 +192,14 @@ export async function submitLeaveRequest(input: {
   });
 }
 
-export async function cancelLeaveRequest(id: string): Promise<LeaveRequest> {
-  return apiFetch<LeaveRequest>(`/leave/requests/${id}/cancel`, { method: "POST" });
+export async function cancelLeaveRequest(id: string): Promise<{ ok: boolean; id: string }> {
+  return apiFetch<{ ok: boolean; id: string }>(`/leave/requests/${id}/cancel`, { method: "POST" });
+}
+
+export async function fetchLeavePolicies(): Promise<
+  import("@/types/config").LeavePolicy[]
+> {
+  return apiFetch("/leave/policies");
 }
 
 export async function updateLeaveStatus(

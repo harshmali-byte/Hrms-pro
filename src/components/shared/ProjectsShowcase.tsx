@@ -1,11 +1,13 @@
+import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
+import { BottomSheet } from "@/components/ui/BottomSheet";
+import { Badge } from "@/components/ui/Badge";
 import { Globe, Leaf, Shield } from "lucide-react-native";
 import type { LucideIcon } from "lucide-react-native";
 import { font } from "@/constants/fonts";
 import { ASQUARIFY, ASQUARIFY_PROJECTS } from "@/constants/company";
 import { Card } from "@/components/ui/Card";
 import { SectionHeader } from "@/components/ui/SectionHeader";
-import { Badge } from "@/components/ui/Badge";
 
 const PROJECT_ICONS: Record<string, LucideIcon> = {
   "ne-family": Shield,
@@ -20,6 +22,8 @@ const statusTone = (status: string) => {
 };
 
 export function ProjectsShowcase() {
+  const [selected, setSelected] = useState<(typeof ASQUARIFY_PROJECTS)[number] | null>(null);
+
   return (
     <View className="mb-2">
       <SectionHeader title="Active projects" />
@@ -30,7 +34,7 @@ export function ProjectsShowcase() {
         {ASQUARIFY_PROJECTS.map((project) => {
           const Icon = PROJECT_ICONS[project.id] ?? Globe;
           return (
-            <Pressable key={project.id} className="active:opacity-95">
+            <Pressable key={project.id} className="active:opacity-95" onPress={() => setSelected(project)}>
               <Card elevated className="overflow-hidden p-0">
                 <View
                   className="h-1.5 w-full"
@@ -74,6 +78,27 @@ export function ProjectsShowcase() {
           );
         })}
       </View>
+
+      <BottomSheet
+        visible={selected != null}
+        title={selected?.name ?? "Project"}
+        onClose={() => setSelected(null)}
+      >
+        {selected ? (
+          <>
+            <Badge label={selected.status} tone={statusTone(selected.status)} />
+            <Text style={{ fontFamily: font.medium }} className="mt-2 text-sm text-primary">
+              {selected.subtitle}
+            </Text>
+            <Text style={{ fontFamily: font.regular }} className="mt-3 text-sm leading-6 text-text">
+              {selected.description}
+            </Text>
+            <Text style={{ fontFamily: font.regular }} className="mt-3 text-xs text-textSubtle">
+              Region · {selected.region}
+            </Text>
+          </>
+        ) : null}
+      </BottomSheet>
     </View>
   );
 }

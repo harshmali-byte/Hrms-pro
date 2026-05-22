@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Alert, Pressable, Share, Text, View } from "react-native";
 import { Plus, Save, Search, Trash2, UserSearch } from "lucide-react-native";
 import { font } from "@/constants/fonts";
@@ -15,9 +15,9 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Divider } from "@/components/ui/Divider";
 import { Badge, type BadgeTone } from "@/components/ui/Badge";
 import { useHrmsData } from "@/context/HrmsDataContext";
+import { useAdminNav, type PeopleDepartmentFilter } from "@/context/AdminNavContext";
 
-const filters = ["All", "Engineering", "Design", "People", "Finance", "Marketing"] as const;
-type Filter = (typeof filters)[number];
+type Filter = PeopleDepartmentFilter;
 
 const statusTone: Record<Employee["status"], BadgeTone> = {
   active: "success",
@@ -33,8 +33,23 @@ const statusLabel: Record<Employee["status"], string> = {
 
 export function EmployeesScreen({ embedded = false }: { embedded?: boolean }) {
   const { employees, addEmployee, updateEmployee, deleteEmployee, globalSearch } = useHrmsData();
+  const { peopleDepartment, peopleStatus } = useAdminNav();
   const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<Filter>("All");
+  const [filter, setFilter] = useState<Filter>(peopleDepartment);
+  const [statusFilter, setStatusFilter] = useState<"all" | Employee["status"]>(peopleStatus);
+
+  useEffect(() => {
+    setFilter(peopleDepartment);
+  }, [peopleDepartment]);
+
+  useEffect(() => {
+    setStatusFilter(peopleStatus);
+  }, [peopleStatus]);
+
+  const filters = useMemo(() => {
+    const depts = [...new Set(employees.map((e) => e.department))].sort();
+    return ["All", ...depts] as Filter[];
+  }, [employees]);
   const [selected, setSelected] = useState<Employee | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -55,10 +70,11 @@ export function EmployeesScreen({ embedded = false }: { embedded?: boolean }) {
         e.name.toLowerCase().includes(searchText) ||
         e.role.toLowerCase().includes(searchText) ||
         e.email.toLowerCase().includes(searchText);
-      const matchesFilter = filter === "All" || e.department === filter;
-      return matchesQuery && matchesFilter;
+      const matchesDept = filter === "All" || e.department === filter;
+      const matchesStatus = statusFilter === "all" || e.status === statusFilter;
+      return matchesQuery && matchesDept && matchesStatus;
     });
-  }, [employees, searchText, filter]);
+  }, [employees, searchText, filter, statusFilter]);
 
   const submitAdd = async () => {
     if (!name.trim() || !email.trim() || !role.trim()) {
@@ -160,6 +176,30 @@ export function EmployeesScreen({ embedded = false }: { embedded?: boolean }) {
         value={query}
         onChangeText={setQuery}
       />
+
+      <View className="mt-3 flex-row flex-wrap gap-2">
+        {(["all", "active", "onLeave", "probation"] as const).map((s) => {
+          const active = statusFilter === s;
+          const label =
+            s === "all" ? "All statuses" : s === "onLeave" ? "On leave" : s === "active" ? "Active" : "Probation";
+          return (
+            <Pressable
+              key={s}
+              onPress={() => setStatusFilter(s)}
+              className={`rounded-full border px-3 py-1.5 ${
+                active ? "border-primary bg-primary-soft" : "border-border bg-surface"
+              }`}
+            >
+              <Text
+                style={{ fontFamily: font.medium }}
+                className={`text-xs ${active ? "text-primary" : "text-textMuted"}`}
+              >
+                {label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
 
       <View className="mt-3 flex-row flex-wrap gap-2">
         {filters.map((f) => {

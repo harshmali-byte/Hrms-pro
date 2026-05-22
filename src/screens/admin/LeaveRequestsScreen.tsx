@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { Inbox } from "lucide-react-native";
 import { ScreenContainer } from "@/components/ui/ScreenContainer";
@@ -8,6 +8,7 @@ import { HelpBanner } from "@/components/ui/HelpBanner";
 import { LeaveRequestCard } from "@/components/shared/LeaveRequestCard";
 import type { LeaveStatus } from "@/types";
 import { useHrmsData } from "@/context/HrmsDataContext";
+import { useAdminNav } from "@/context/AdminNavContext";
 
 const tabs: { id: LeaveStatus | "all"; label: string }[] = [
   { id: "pending", label: "Pending" },
@@ -16,8 +17,13 @@ const tabs: { id: LeaveStatus | "all"; label: string }[] = [
 ];
 
 export function LeaveRequestsScreen({ embedded = false }: { embedded?: boolean }) {
-  const [tab, setTab] = useState<LeaveStatus | "all">("pending");
+  const { leaveTab } = useAdminNav();
+  const [tab, setTab] = useState<LeaveStatus | "all">(leaveTab);
   const { leaveRequests, setLeaveRequestStatus } = useHrmsData();
+
+  useEffect(() => {
+    setTab(leaveTab);
+  }, [leaveTab]);
 
   const pendingCount = useMemo(
     () => leaveRequests.filter((r) => r.status === "pending").length,

@@ -12,12 +12,17 @@ interface Props {
   payslip: Payslip;
   onDownload?: (id: string) => void;
   onPreview?: (id: string) => void;
+  onOpenDetail?: (payslip: Payslip) => void;
 }
 
-export function PayslipCard({ payslip, onDownload, onPreview }: Props) {
+export function PayslipCard({ payslip, onDownload, onPreview, onOpenDetail }: Props) {
   const isProcessing = payslip.status === "processing";
 
   const showDetail = () => {
+    if (onOpenDetail) {
+      onOpenDetail(payslip);
+      return;
+    }
     Alert.alert(
       `${payslip.month} ${payslip.year}`,
       [

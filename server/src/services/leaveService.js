@@ -19,6 +19,25 @@ const leaveTypeLabel = {
   unpaid: "Unpaid",
 };
 
+export async function listActiveLeavePolicies() {
+  const rows = await LeavePolicy.findAll({
+    where: { active: true },
+    order: [["name", "ASC"]],
+  });
+  return rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    type: row.type,
+    daysPerYear: row.daysPerYear,
+    carryForwardLimit: row.carryForwardLimit,
+    isPaid: row.isPaid,
+    minNoticeDays: row.minNoticeDays,
+    requiresApproval: row.requiresApproval,
+    active: row.active,
+    description: row.description,
+  }));
+}
+
 export function leaveListWhere(user) {
   if (user.role === "admin") return {};
   if (user.employeeId) return { employeeId: user.employeeId };
@@ -176,15 +195,12 @@ export async function cancelLeave(req, user, id) {
   if (cur.employeeId !== user.employeeId) throw new AppError("Forbidden", 403);
   if (cur.status !== "pending") throw new AppError("Only pending requests can be cancelled");
 
-  await cur.update({
-    status: "rejected",
-    reason: `${cur.reason} (cancelled by employee)`,
-  });
+  await cur.destroy();
   await logAudit(req, {
     action: "cancel",
     resource: "leave_request",
     resourceId: id,
     details: `${cur.employeeName} cancelled leave request`,
   });
-  return leaveRequestToJson(cur);
+  return { ok: true, id };
 }

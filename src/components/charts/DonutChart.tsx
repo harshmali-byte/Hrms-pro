@@ -1,4 +1,4 @@
-import { View, Text } from "react-native";
+import { Pressable, View, Text } from "react-native";
 import Svg, { G, Circle } from "react-native-svg";
 import { font } from "@/constants/fonts";
 
@@ -8,9 +8,10 @@ interface Props {
   segments: DonutSegment[];
   size?: number;
   strokeWidth?: number;
+  onSegmentPress?: (segment: DonutSegment) => void;
 }
 
-export function DonutChart({ segments, size = 140, strokeWidth = 22 }: Props) {
+export function DonutChart({ segments, size = 140, strokeWidth = 22, onSegmentPress }: Props) {
   const total = segments.reduce((s, x) => s + x.value, 0) || 1;
   const r = (size - strokeWidth) / 2;
   const cx = size / 2;
@@ -45,22 +46,36 @@ export function DonutChart({ segments, size = 140, strokeWidth = 22 }: Props) {
         </G>
       </Svg>
       <View className="ml-4 flex-1 gap-2">
-        {segments.map((seg) => (
-          <View key={seg.label} className="flex-row items-center justify-between">
-            <View className="flex-row items-center">
-              <View
-                className="mr-2 h-2.5 w-2.5 rounded-full"
-                style={{ backgroundColor: seg.color }}
-              />
-              <Text style={{ fontFamily: font.regular }} className="text-sm text-textMuted">
-                {seg.label}
+        {segments.map((seg) => {
+          const row = (
+            <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center">
+                <View
+                  className="mr-2 h-2.5 w-2.5 rounded-full"
+                  style={{ backgroundColor: seg.color }}
+                />
+                <Text style={{ fontFamily: font.regular }} className="text-sm text-textMuted">
+                  {seg.label}
+                </Text>
+              </View>
+              <Text style={{ fontFamily: font.semibold }} className="text-sm text-text">
+                {seg.value} · {Math.round((seg.value / total) * 100)}%
               </Text>
             </View>
-            <Text style={{ fontFamily: font.semibold }} className="text-sm text-text">
-              {Math.round((seg.value / total) * 100)}%
-            </Text>
-          </View>
-        ))}
+          );
+          if (!onSegmentPress) {
+            return <View key={seg.label}>{row}</View>;
+          }
+          return (
+            <Pressable
+              key={seg.label}
+              onPress={() => onSegmentPress(seg)}
+              className="rounded-lg py-1 active:bg-surfaceMuted"
+            >
+              {row}
+            </Pressable>
+          );
+        })}
       </View>
     </View>
   );

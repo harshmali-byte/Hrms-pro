@@ -41,7 +41,9 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Divider } from "@/components/ui/Divider";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { useAuth } from "@/context/AuthContext";
+import { useEmployeeNav } from "@/context/EmployeeNavContext";
 import { useHrmsData } from "@/context/HrmsDataContext";
+import type { EmployeeRouteId } from "@/navigation/shellNav";
 import { HelpBanner } from "@/components/ui/HelpBanner";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { Button } from "@/components/ui/Button";
@@ -203,9 +205,16 @@ function ToggleRow({
   );
 }
 
-export function ProfileScreen({ embedded = false }: { embedded?: boolean }) {
-  const { signOut } = useAuth();
-  const { resetDemoData, currentEmployee, reload } = useHrmsData();
+export function ProfileScreen({
+  embedded = false,
+  routeKey,
+}: {
+  embedded?: boolean;
+  routeKey?: EmployeeRouteId;
+}) {
+  const { signOut, user } = useAuth();
+  const { profileSection: navSection, setProfileSection } = useEmployeeNav();
+  const { resetDemoData, currentEmployee, reload, employeeTemplates } = useHrmsData();
   const [section, setSection] = useState<Section>(null);
   const [overview, setOverview] = useState<AccountOverview | null>(null);
   const [loading, setLoading] = useState(false);
@@ -249,6 +258,13 @@ export function ProfileScreen({ embedded = false }: { embedded?: boolean }) {
   useEffect(() => {
     void loadAccount();
   }, []);
+
+  useEffect(() => {
+    if (routeKey === "profile" && navSection) {
+      setSection(navSection);
+      setProfileSection(null);
+    }
+  }, [routeKey, navSection, setProfileSection]);
 
   const refreshAccount = async () => {
     const data = await fetchAccountOverview();
@@ -468,9 +484,23 @@ export function ProfileScreen({ embedded = false }: { embedded?: boolean }) {
         ))}
       </Card>
 
-      <Card padded={false} elevated={false} className="mt-4 overflow-hidden">
-        <MenuRow icon={RotateCcw} label="Reset demo data" onPress={confirmResetDemo} />
-      </Card>
+      {user?.role === "admin" ? (
+        <Card padded={false} elevated={false} className="mt-4 overflow-hidden">
+          <MenuRow icon={RotateCcw} label="Reset demo data" onPress={confirmResetDemo} />
+        </Card>
+      ) : null}
+
+      {employeeTemplates.length > 0 ? (
+        <Card className="mt-4">
+          <Text style={{ fontFamily: font.semibold }} className="text-sm text-text">
+            Company templates
+          </Text>
+          <Text style={{ fontFamily: font.regular }} className="mt-2 text-xs text-textMuted">
+            {employeeTemplates.slice(0, 3).map((t) => t.name).join(" · ")}
+            {employeeTemplates.length > 3 ? " …" : ""}
+          </Text>
+        </Card>
+      ) : null}
 
       <View className="mt-4">
         <Card padded={false} elevated={false} className="overflow-hidden">

@@ -22,6 +22,19 @@ router.get(
 );
 
 router.get(
+  "/clocked-in",
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    if (req.user.role !== "admin") {
+      res.status(403).json({ error: "Admin only" });
+      return;
+    }
+    const { getClockedInToday } = await import("../services/dashboardService.js");
+    res.json({ employees: await getClockedInToday() });
+  }),
+);
+
+router.get(
   "/widgets",
   requireAuth,
   asyncHandler(async (req, res) => {

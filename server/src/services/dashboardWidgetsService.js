@@ -242,6 +242,7 @@ export async function getAdminDashboardWidgets() {
       subtitle: "Live from today's punches",
       tone: teamIn > 0 ? "success" : "default",
       icon: "activity",
+      action: { type: "navigate", target: "people" },
     },
     {
       id: "payroll-progress",
@@ -272,6 +273,7 @@ export async function getAdminDashboardWidgets() {
       subtitle: nextEvent?.when ?? "See dashboard calendar",
       tone: "primary",
       icon: "calendar",
+      action: { type: "navigate", target: "dashboard" },
     },
     {
       id: "notice",
@@ -281,6 +283,7 @@ export async function getAdminDashboardWidgets() {
       subtitle: topNotice?.date ?? "Notice board",
       tone: "warning",
       icon: "megaphone",
+      action: { type: "navigate", target: "dashboard" },
     },
     {
       id: "projects",
@@ -290,6 +293,7 @@ export async function getAdminDashboardWidgets() {
       subtitle: "Ne Family · Bakali · HRMS",
       tone: "success",
       icon: "briefcase",
+      action: { type: "navigate", target: "settings" },
     },
   ];
 

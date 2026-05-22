@@ -23,6 +23,14 @@ router.get(
   }),
 );
 
+router.get(
+  "/policies",
+  requireAuth,
+  asyncHandler(async (_req, res) => {
+    res.json(await leaveService.listActiveLeavePolicies());
+  }),
+);
+
 router.post(
   "/requests",
   requireAuth,

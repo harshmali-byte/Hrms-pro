@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { Announcement, Holiday } from "../models/index.js";
+import { Announcement, Holiday, DocumentTemplate } from "../models/index.js";
 import { requireAuth, requireAdmin } from "../middleware/auth.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { formatPostedDate, newId } from "../utils/dates.js";
@@ -56,6 +56,24 @@ router.post(
       postedOn: row.postedOn,
       tag: row.tag,
     });
+  }),
+);
+
+router.get(
+  "/templates",
+  requireAuth,
+  asyncHandler(async (_req, res) => {
+    const rows = await DocumentTemplate.findAll({ order: [["name", "ASC"]] });
+    res.json(
+      rows.map((t) => ({
+        id: t.id,
+        name: t.name,
+        category: t.category,
+        description: t.description,
+        version: t.version,
+        updatedAt: t.updatedAtLabel,
+      })),
+    );
   }),
 );
 

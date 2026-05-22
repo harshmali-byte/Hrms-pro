@@ -28,6 +28,8 @@ import {
   resetAllData,
   saveAttendance,
   submitLeaveRequest,
+  cancelLeaveRequest as cancelLeaveRequestApi,
+  fetchLeavePolicies,
   updateEmployee as apiUpdateEmployee,
   updateLeaveStatus,
   type DashboardStats,
@@ -58,6 +60,9 @@ import type {
   Payslip,
 } from "@/types";
 import type { DashboardWidget } from "@/types/dashboard";
+import type { LeavePolicy } from "@/types/config";
+import { fetchEmployeeTemplates } from "@/api/contentApi";
+import type { DocumentTemplate } from "@/types/config";
 
 export interface HrmsDataContextValue {
   isReady: boolean;
@@ -102,6 +107,9 @@ export interface HrmsDataContextValue {
     reason: string;
   }) => Promise<void>;
   setLeaveRequestStatus: (id: string, status: LeaveStatus) => Promise<void>;
+  cancelLeaveRequest: (id: string) => Promise<void>;
+  leavePolicies: LeavePolicy[];
+  employeeTemplates: DocumentTemplate[];
 
   notifications: HrmsNotification[];
   unreadNotificationCount: number;
@@ -117,6 +125,8 @@ export interface HrmsDataContextValue {
   dashboardCharts: DashboardCharts | null;
   dashboardWidgets: DashboardWidget[];
   refreshDashboardWidgets: () => Promise<void>;
+  refreshAdminDashboard: () => Promise<void>;
+  refreshEmployeeWorkspace: () => Promise<void>;
   announcements: Announcement[];
   holidays: Holiday[];
   attendanceHistory: AttendanceRecord[];
@@ -151,6 +161,8 @@ export function HrmsDataProvider({ children }: { children: ReactNode }) {
   const [departments, setDepartments] = useState<DepartmentStat[]>([]);
   const [payrollSummary, setPayrollSummary] = useState<PayrollSummary | null>(null);
   const [dashboardWidgets, setDashboardWidgets] = useState<DashboardWidget[]>([]);
+  const [leavePolicies, setLeavePolicies] = useState<LeavePolicy[]>([]);
+  const [employeeTemplates, setEmployeeTemplates] = useState<DocumentTemplate[]>([]);
 
   const refreshDashboardWidgets = useCallback(async () => {
     if (!token) return;
@@ -161,6 +173,26 @@ export function HrmsDataProvider({ children }: { children: ReactNode }) {
       /* keep previous widgets */
     }
   }, [token]);
+
+  const refreshAdminDashboard = useCallback(async () => {
+    if (!token || user?.role !== "admin") return;
+    try {
+      const [stats, charts, widgetsRes, depts, summary] = await Promise.all([
+        fetchDashboardStats(),
+        fetchDashboardCharts(),
+        fetchDashboardWidgets(),
+        fetchDepartments(),
+        fetchPayrollSummary(),
+      ]);
+      setDashboardStatsRemote(stats);
+      setDashboardCharts(charts);
+      setDashboardWidgets(widgetsRes.widgets ?? []);
+      setDepartments(depts);
+      setPayrollSummary(summary);
+    } catch {
+      /* keep previous */
+    }
+  }, [token, user?.role]);
 
   const loadAll = useCallback(async () => {
     if (!token) {
@@ -176,6 +208,8 @@ export function HrmsDataProvider({ children }: { children: ReactNode }) {
       setDepartments([]);
       setPayrollSummary(null);
       setDashboardWidgets([]);
+      setLeavePolicies([]);
+      setEmployeeTemplates([]);
       setIsReady(true);
       setApiError(null);
       return;
@@ -185,7 +219,8 @@ export function HrmsDataProvider({ children }: { children: ReactNode }) {
     setApiError(null);
     const isAdmin = user?.role === "admin";
     try {
-      const [state, stats, charts, widgetsRes, history, depts, summary, slips] = await Promise.all([
+      const [state, stats, charts, widgetsRes, history, depts, summary, slips, policies, templates] =
+        await Promise.all([
         fetchBootstrap(),
         fetchDashboardStats().catch(() => null),
         isAdmin ? fetchDashboardCharts().catch(() => null) : Promise.resolve(null),
@@ -196,6 +231,8 @@ export function HrmsDataProvider({ children }: { children: ReactNode }) {
         isAdmin ? fetchDepartments().catch(() => [] as DepartmentStat[]) : Promise.resolve([]),
         isAdmin ? fetchPayrollSummary().catch(() => null) : Promise.resolve(null),
         getPayslipsFromApi().catch(() => [] as Payslip[]),
+        fetchLeavePolicies().catch(() => [] as LeavePolicy[]),
+        fetchEmployeeTemplates().catch(() => [] as DocumentTemplate[]),
       ]);
       setDemo({
         employees: state.employees,
@@ -212,6 +249,8 @@ export function HrmsDataProvider({ children }: { children: ReactNode }) {
       setAttendanceHistory(history);
       setDashboardCharts(charts);
       setDashboardWidgets(widgetsRes.widgets ?? []);
+      setLeavePolicies(policies);
+      setEmployeeTemplates(templates);
       setDepartments(depts);
       setPayrollSummary(summary);
       if (stats) setDashboardStatsRemote(stats);
@@ -219,6 +258,26 @@ export function HrmsDataProvider({ children }: { children: ReactNode }) {
       setApiError(e instanceof Error ? e.message : "Could not reach API server");
     } finally {
       setIsReady(true);
+    }
+  }, [token, user?.role, user?.employeeId]);
+
+  const refreshEmployeeWorkspace = useCallback(async () => {
+    if (!token || user?.role !== "employee") return;
+    try {
+      const [widgetsRes, history, policies, templates] = await Promise.all([
+        fetchDashboardWidgets(),
+        user?.employeeId
+          ? fetchAttendanceHistory(14)
+          : Promise.resolve([] as AttendanceRecord[]),
+        fetchLeavePolicies(),
+        fetchEmployeeTemplates(),
+      ]);
+      setDashboardWidgets(widgetsRes.widgets ?? []);
+      setAttendanceHistory(history);
+      setLeavePolicies(policies);
+      setEmployeeTemplates(templates);
+    } catch {
+      /* keep previous */
     }
   }, [token, user?.role, user?.employeeId]);
 
@@ -340,6 +399,22 @@ export function HrmsDataProvider({ children }: { children: ReactNode }) {
               ),
               leaveBalances:
                 result.leaveBalances.length > 0 ? result.leaveBalances : d.leaveBalances,
+            }
+          : d,
+      );
+      await loadAll();
+    },
+    [loadAll],
+  );
+
+  const cancelLeaveRequest = useCallback(
+    async (id: string) => {
+      await cancelLeaveRequestApi(id);
+      setDemo((d) =>
+        d
+          ? {
+              ...d,
+              leaveRequests: d.leaveRequests.filter((r) => r.id !== id),
             }
           : d,
       );
@@ -475,6 +550,9 @@ export function HrmsDataProvider({ children }: { children: ReactNode }) {
       pendingLeaveCount,
       addLeaveRequest,
       setLeaveRequestStatus,
+      cancelLeaveRequest,
+      leavePolicies,
+      employeeTemplates,
       notifications,
       unreadNotificationCount,
       markNotificationRead,
@@ -487,6 +565,8 @@ export function HrmsDataProvider({ children }: { children: ReactNode }) {
       dashboardCharts,
       dashboardWidgets,
       refreshDashboardWidgets,
+      refreshAdminDashboard,
+      refreshEmployeeWorkspace,
       announcements,
       holidays,
       attendanceHistory,
@@ -518,6 +598,9 @@ export function HrmsDataProvider({ children }: { children: ReactNode }) {
       pendingLeaveCount,
       addLeaveRequest,
       setLeaveRequestStatus,
+      cancelLeaveRequest,
+      leavePolicies,
+      employeeTemplates,
       notifications,
       unreadNotificationCount,
       markNotificationRead,
@@ -530,6 +613,8 @@ export function HrmsDataProvider({ children }: { children: ReactNode }) {
       dashboardCharts,
       dashboardWidgets,
       refreshDashboardWidgets,
+      refreshAdminDashboard,
+      refreshEmployeeWorkspace,
       announcements,
       holidays,
       attendanceHistory,

@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useHrmsData } from "@/context/HrmsDataContext";
+import { AdminNavProvider } from "@/context/AdminNavContext";
 import { AppShell } from "@/components/layout/AppShell";
 import {
   adminNavItems,
@@ -14,22 +16,10 @@ import { LeaveRequestsScreen } from "@/screens/admin/LeaveRequestsScreen";
 import { PayrollScreen } from "@/screens/admin/PayrollScreen";
 import { AdminSettingsScreen } from "@/screens/admin/AdminSettingsScreen";
 
-function AdminScreen({
-  route,
-  setRoute,
-}: {
-  route: AdminRouteId;
-  setRoute: (r: AdminRouteId) => void;
-}) {
+function AdminScreen({ route }: { route: AdminRouteId }) {
   switch (route) {
     case "dashboard":
-      return (
-        <AdminDashboard
-          onNavigate={setRoute}
-          onNavigatePeople={() => setRoute("people")}
-          onNavigateRequests={() => setRoute("requests")}
-        />
-      );
+      return <AdminDashboard />;
     case "people":
       return <EmployeesScreen embedded />;
     case "requests":
@@ -45,21 +35,34 @@ function AdminScreen({
 
 export function AdminTabs() {
   const { signOut, user } = useAuth();
+  const { pendingLeaveCount } = useHrmsData();
   const [route, setRoute] = useState<AdminRouteId>("dashboard");
 
+  const navItems = useMemo(
+    () =>
+      adminNavItems.map((item) =>
+        item.id === "requests" && pendingLeaveCount > 0
+          ? { ...item, badge: pendingLeaveCount }
+          : item,
+      ),
+    [pendingLeaveCount],
+  );
+
   return (
-    <AppShell
-      navItems={adminNavItems}
-      activeId={route}
-      onNavigate={(id) => setRoute(id as AdminRouteId)}
-      pageTitle={adminPageTitles[route]}
-      pageSubtitle={adminPageSubtitles[route]}
-      userName={user?.name ?? "Admin"}
-      userRole="Admin"
-      avatarColor="#0066FF"
-      onSignOut={() => void signOut()}
-    >
-      <AdminScreen route={route} setRoute={setRoute} />
-    </AppShell>
+    <AdminNavProvider onRouteChange={setRoute}>
+      <AppShell
+        navItems={navItems}
+        activeId={route}
+        onNavigate={(id) => setRoute(id as AdminRouteId)}
+        pageTitle={adminPageTitles[route]}
+        pageSubtitle={adminPageSubtitles[route]}
+        userName={user?.name ?? "Admin"}
+        userRole="Admin"
+        avatarColor="#0066FF"
+        onSignOut={() => void signOut()}
+      >
+        <AdminScreen route={route} />
+      </AppShell>
+    </AdminNavProvider>
   );
 }

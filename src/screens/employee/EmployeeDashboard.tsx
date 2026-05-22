@@ -1,9 +1,18 @@
-import { useCallback, useState } from "react";
-import { Alert, Pressable, Text, View } from "react-native";
+import { useCallback, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  Linking,
+  Pressable,
+  Share,
+  Text,
+  View,
+} from "react-native";
 import {
   Bell,
   CalendarDays,
   FileText,
+  Mail,
+  Phone,
   Plane,
   Receipt,
   Stethoscope,
@@ -11,8 +20,10 @@ import {
   Wallet,
 } from "lucide-react-native";
 import { iconSizes, palette } from "@/constants/theme";
+import { font } from "@/constants/fonts";
 import type { Announcement } from "@/types";
-import type { EmployeeRouteId } from "@/navigation/shellNav";
+import type { Employee } from "@/types";
+import type { DashboardWidget } from "@/types/dashboard";
 import { ScreenContainer } from "@/components/ui/ScreenContainer";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { Card } from "@/components/ui/Card";
@@ -23,13 +34,17 @@ import { ProjectsShowcase } from "@/components/shared/ProjectsShowcase";
 import { AnnouncementCard } from "@/components/shared/AnnouncementCard";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { Badge } from "@/components/ui/Badge";
-import { font } from "@/constants/fonts";
+import { Button } from "@/components/ui/Button";
 import { Divider } from "@/components/ui/Divider";
 import { HelpBanner } from "@/components/ui/HelpBanner";
 import { Headline, Kicker, LinkLabel } from "@/components/ui/Typography";
 import { DashboardWidgetGrid } from "@/components/dashboard/DashboardWidgetGrid";
+import { NotificationDetailModal } from "@/components/layout/NotificationDetailModal";
+import { useEmployeeNav } from "@/context/EmployeeNavContext";
 import { useHrmsData } from "@/context/HrmsDataContext";
-import { COMMON } from "@/constants/strings";
+import type { HrmsNotification } from "@/types";
+import type { EmployeeRouteId } from "@/navigation/shellNav";
+type SheetKind = "holidays" | "directory" | "announcement" | "health" | "reimburse" | "notifications" | null;
 
 type QuickKey =
   | "leave"
@@ -57,81 +72,135 @@ const quickActions: {
   { key: "announcements", label: "Announcements", icon: Bell, accent: "#64748B" },
 ];
 
-export function EmployeeDashboard({
-  embedded = false,
-  onNavigate,
-}: {
-  embedded?: boolean;
-  onNavigate?: (route: EmployeeRouteId) => void;
-}) {
-  const { employees, currentEmployee, announcements, holidays, dashboardWidgets } =
-    useHrmsData();
+export function EmployeeDashboard({ embedded = false }: { embedded?: boolean }) {
+  const nav = useEmployeeNav();
+  const {
+    employees,
+    currentEmployee,
+    announcements,
+    holidays,
+    dashboardWidgets,
+    notifications,
+    employeeTemplates,
+    markNotificationRead,
+    reload,
+  } = useHrmsData();
+
   const nextHoliday = holidays[0];
-  const [sheet, setSheet] = useState<"holidays" | "directory" | "announcement" | null>(
-    null,
-  );
+  const [sheet, setSheet] = useState<SheetKind>(null);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [selectedNotification, setSelectedNotification] = useState<HrmsNotification | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const healthPolicy = useMemo(
+    () => employeeTemplates.find((t) => t.category === "policy" && /health|remote|hubstaff/i.test(t.name)),
+    [employeeTemplates],
+  );
 
   const openAnnouncement = useCallback((a: Announcement) => {
     setSelectedAnnouncement(a);
     setSheet("announcement");
   }, []);
 
+  const handleNavigate = useCallback(
+    (target: string) => {
+      nav.navigate(target as EmployeeRouteId);
+    },
+    [nav],
+  );
+
+  const handleWidgetPress = useCallback(
+    (w: DashboardWidget) => {
+      if (w.id === "notifications") {
+        setSheet("notifications");
+        return;
+      }
+      if (w.action?.type === "navigate" && w.action.target) {
+        handleNavigate(w.action.target);
+      }
+    },
+    [handleNavigate],
+  );
+
   const onQuickAction = useCallback(
     (key: QuickKey) => {
       switch (key) {
         case "leave":
-          onNavigate?.("leave");
+          nav.navigate("leave");
           break;
         case "payslip":
-          onNavigate?.("payslip");
+          nav.navigate("payslip");
           break;
         case "holidays":
           setSheet("holidays");
           break;
         case "reimburse":
-          Alert.alert(
-            "Reimbursements",
-            "Demo: your draft expense report was saved. Approvals route to Finance.",
-          );
+          setSheet("reimburse");
           break;
         case "directory":
           setSheet("directory");
           break;
         case "health":
-          Alert.alert("Health benefits", "Demo: open policy PDF and network hospitals (mock).");
+          setSheet("health");
           break;
         case "documents":
-          Alert.alert("Documents", "Demo: tax forms and offer letter available in vault.");
+          nav.navigate("profile", { profileSection: "documents" });
           break;
         case "announcements":
+          setSelectedAnnouncement(null);
           setSheet("announcement");
-          setSelectedAnnouncement(announcements[0]!);
           break;
         default:
           break;
       }
     },
-    [onNavigate],
+    [nav, announcements],
   );
+
+  const pullRefresh = async () => {
+    setRefreshing(true);
+    await reload();
+    setRefreshing(false);
+  };
+
+  const contactEmployee = (e: Employee, channel: "email" | "phone") => {
+    const url = channel === "email" ? `mailto:${e.email}` : `tel:${e.phone.replace(/\s/g, "")}`;
+    Linking.openURL(url).catch(() => {
+      void Share.share({ message: channel === "email" ? e.email : e.phone });
+    });
+  };
 
   return (
     <ScreenContainer embedded={embedded}>
-      <View className="mb-2">
-        <Kicker>Welcome back</Kicker>
-        <Headline>
-          {(currentEmployee?.name ?? "there").split(" ")[0]}
-        </Headline>
+      <View className="mb-2 flex-row items-start justify-between">
+        <View className="flex-1">
+          <Kicker>Welcome back</Kicker>
+          <Headline>{(currentEmployee?.name ?? "there").split(" ")[0]}</Headline>
+        </View>
+        <Pressable
+          onPress={() => void pullRefresh()}
+          className="rounded-full border border-border bg-surface px-3 py-2 active:bg-surfaceMuted"
+        >
+          {refreshing ? (
+            <ActivityIndicator size="small" color={palette.primary} />
+          ) : (
+            <Text style={{ fontFamily: font.semibold }} className="text-xs text-primary">
+              Refresh
+            </Text>
+          )}
+        </Pressable>
       </View>
 
-      <HelpBanner text="Asquarify builds Ne Family (UK insurance) and Bakali (fresh mangoes) — clock in, track Hubstaff, and ship on time from Junagadh." />
+      <HelpBanner text="Clock in for HRMS attendance, keep Hubstaff running on your machine, and use shortcuts below for leave, payslips, and team directory." />
 
       {dashboardWidgets.length > 0 ? (
         <>
           <SectionHeader title="Your overview" />
           <DashboardWidgetGrid
             widgets={dashboardWidgets}
-            onAction={(target) => onNavigate?.(target as EmployeeRouteId)}
+            onAction={handleNavigate}
+            onWidgetPress={handleWidgetPress}
           />
         </>
       ) : null}
@@ -142,16 +211,7 @@ export function EmployeeDashboard({
 
       <ProjectsShowcase />
 
-      <SectionHeader
-        title="Quick actions"
-        actionLabel={COMMON.viewAll}
-        onAction={() =>
-          Alert.alert(
-            "Shortcuts",
-            "Use tiles below for Leave, Payslips, Holidays, Directory, and more. Open Attendance from the bottom tab for full history.",
-          )
-        }
-      />
+      <SectionHeader title="Quick actions" actionLabel="Attendance" onAction={() => nav.navigate("attendance")} />
       <View className="flex-row flex-wrap gap-2">
         {quickActions.map((a) => (
           <ActionTile
@@ -164,11 +224,7 @@ export function EmployeeDashboard({
         ))}
       </View>
 
-      <SectionHeader
-        title="Upcoming holiday"
-        actionLabel="See all"
-        onAction={() => setSheet("holidays")}
-      />
+      <SectionHeader title="Upcoming holiday" actionLabel="See all" onAction={() => setSheet("holidays")} />
       {nextHoliday ? (
         <Pressable onPress={() => setSheet("holidays")} accessibilityRole="button">
           <Card className="active:bg-surfaceMuted" elevated={false}>
@@ -209,51 +265,163 @@ export function EmployeeDashboard({
 
       <BottomSheet visible={sheet === "holidays"} title="Holiday calendar" onClose={() => setSheet(null)}>
         {holidays.map((h, i) => (
-          <Pressable
-            key={h.id}
-            onPress={() =>
-              Alert.alert(
-                h.name,
-                `${h.date}\nType: ${h.type === "public" ? "Public holiday" : "Optional holiday"}\n\nDemo: add to device calendar would be offered here.`,
-              )
-            }
-            accessibilityRole="button"
-            className="mb-3 rounded-lg active:bg-surfaceMuted"
-          >
-            <View className="flex-row items-center justify-between">
-              <Text className="text-base font-medium text-text">{h.name}</Text>
-              <Badge label={h.type === "public" ? "Public" : "Optional"} tone="neutral" />
-            </View>
-            <Text className="mt-1 text-sm text-textMuted">{h.date}</Text>
-            {i < holidays.length - 1 ? <Divider className="mt-3" /> : null}
-          </Pressable>
+          <View key={h.id} className={i > 0 ? "mt-4 border-t border-border pt-4" : ""}>
+            <Text style={{ fontFamily: font.semibold }} className="text-base text-text">
+              {h.name}
+            </Text>
+            <Text style={{ fontFamily: font.regular }} className="mt-1 text-sm text-textMuted">
+              {h.date}
+            </Text>
+            <Badge
+              label={h.type === "public" ? "Public holiday" : "Optional holiday"}
+              tone="neutral"
+            />
+          </View>
         ))}
       </BottomSheet>
 
-      <BottomSheet visible={sheet === "directory"} title="People directory" onClose={() => setSheet(null)}>
+      <BottomSheet
+        visible={sheet === "directory"}
+        title="People directory"
+        onClose={() => {
+          setSheet(null);
+          setSelectedEmployee(null);
+        }}
+      >
         {employees.map((e) => (
           <Pressable
             key={e.id}
-            onPress={() =>
-              Alert.alert(
-                e.name,
-                `${e.role}\n${e.department}\n${e.email}\n${e.phone}\nJoined: ${e.joinedOn}`,
-              )
-            }
-            accessibilityRole="button"
-            className="mb-4 flex-row items-center rounded-xl active:bg-surfaceMuted"
+            onPress={() => setSelectedEmployee(e)}
+            className="mb-3 flex-row items-center rounded-xl border border-border p-3 active:bg-surfaceMuted"
           >
             <Avatar name={e.name} color={e.avatarColor} size="sm" />
             <View className="ml-3 flex-1">
-              <Text className="text-base font-medium text-text">{e.name}</Text>
-              <Text className="text-sm text-textMuted">
+              <Text style={{ fontFamily: font.semibold }} className="text-sm text-text">
+                {e.name}
+              </Text>
+              <Text style={{ fontFamily: font.regular }} className="text-xs text-textMuted">
                 {e.role} · {e.department}
               </Text>
-              <Text className="text-xs text-textSubtle">{e.email} · tap for details</Text>
             </View>
           </Pressable>
         ))}
+        {selectedEmployee ? (
+          <>
+            <Divider className="my-4" />
+            <Text style={{ fontFamily: font.bold }} className="text-lg text-text">
+              {selectedEmployee.name}
+            </Text>
+            <Text style={{ fontFamily: font.regular }} className="mt-2 text-sm text-textMuted">
+              {selectedEmployee.role} · {selectedEmployee.department}
+            </Text>
+            <Text style={{ fontFamily: font.regular }} className="mt-1 text-sm text-text">
+              {selectedEmployee.email}
+            </Text>
+            <Text style={{ fontFamily: font.regular }} className="text-sm text-text">
+              {selectedEmployee.phone}
+            </Text>
+            <View className="mt-4 flex-row gap-2">
+              <View className="flex-1">
+                <Button
+                  label="Email"
+                  icon={Mail}
+                  variant="secondary"
+                  fullWidth
+                  onPress={() => contactEmployee(selectedEmployee, "email")}
+                />
+              </View>
+              <View className="flex-1">
+                <Button
+                  label="Call"
+                  icon={Phone}
+                  variant="secondary"
+                  fullWidth
+                  onPress={() => contactEmployee(selectedEmployee, "phone")}
+                />
+              </View>
+            </View>
+          </>
+        ) : null}
       </BottomSheet>
+
+      <BottomSheet
+        visible={sheet === "health"}
+        title="Health & benefits"
+        onClose={() => setSheet(null)}
+        footer={
+          <Button
+            label="Open documents"
+            fullWidth
+            onPress={() => {
+              setSheet(null);
+              nav.navigate("profile", { profileSection: "documents" });
+            }}
+          />
+        }
+      >
+        <Text style={{ fontFamily: font.regular }} className="text-sm leading-6 text-text">
+          {healthPolicy?.description ??
+            "Group health cover and wellness benefits are managed by HR. Contact support for enrolment changes."}
+        </Text>
+        {healthPolicy ? (
+          <Text style={{ fontFamily: font.regular }} className="mt-3 text-xs text-textSubtle">
+            Policy: {healthPolicy.name} · v{healthPolicy.version}
+          </Text>
+        ) : null}
+      </BottomSheet>
+
+      <BottomSheet visible={sheet === "reimburse"} title="Reimbursements" onClose={() => setSheet(null)}>
+        <Text style={{ fontFamily: font.regular }} className="text-sm leading-6 text-text">
+          Submit expenses through Help & support on your profile. Finance approves against project codes
+          (Ne Family, Bakali, internal).
+        </Text>
+        <View className="mt-4">
+          <Button
+            label="Open support"
+            fullWidth
+            onPress={() => {
+              setSheet(null);
+              nav.navigate("profile", { profileSection: "support" });
+            }}
+          />
+        </View>
+      </BottomSheet>
+
+      <BottomSheet
+        visible={sheet === "notifications"}
+        title="Notifications"
+        onClose={() => setSheet(null)}
+      >
+        {notifications.length === 0 ? (
+          <Text style={{ fontFamily: font.regular }} className="text-sm text-textMuted">
+            No notifications yet.
+          </Text>
+        ) : (
+          notifications.map((n) => (
+            <Pressable
+              key={n.id}
+              onPress={() => {
+                if (!n.read) markNotificationRead(n.id);
+                setSelectedNotification(n);
+              }}
+              className="mb-3 rounded-xl border border-border p-3 active:bg-surfaceMuted"
+            >
+              <Text style={{ fontFamily: font.semibold }} className="text-sm text-text">
+                {n.title}
+              </Text>
+              <Text style={{ fontFamily: font.regular }} className="mt-1 text-xs text-textMuted" numberOfLines={2}>
+                {n.body}
+              </Text>
+            </Pressable>
+          ))
+        )}
+      </BottomSheet>
+
+      <NotificationDetailModal
+        notification={selectedNotification}
+        visible={selectedNotification != null}
+        onClose={() => setSelectedNotification(null)}
+      />
 
       <BottomSheet
         visible={sheet === "announcement"}
@@ -267,10 +435,16 @@ export function EmployeeDashboard({
           <>
             <View className="mb-2 flex-row items-center justify-between">
               <Badge label={selectedAnnouncement.tag} tone="info" />
-              <Text className="text-xs text-textMuted">{selectedAnnouncement.postedOn}</Text>
+              <Text style={{ fontFamily: font.regular }} className="text-xs text-textMuted">
+                {selectedAnnouncement.postedOn}
+              </Text>
             </View>
-            <Text className="text-sm leading-6 text-text">{selectedAnnouncement.body}</Text>
-            <Text className="mt-4 text-xs text-textSubtle">— {selectedAnnouncement.postedBy}</Text>
+            <Text style={{ fontFamily: font.regular }} className="text-sm leading-6 text-text">
+              {selectedAnnouncement.body}
+            </Text>
+            <Text style={{ fontFamily: font.regular }} className="mt-4 text-xs text-textSubtle">
+              — {selectedAnnouncement.postedBy}
+            </Text>
             <Divider className="my-5" />
           </>
         ) : null}
@@ -280,8 +454,10 @@ export function EmployeeDashboard({
             className="mb-3 rounded-lg border border-border p-3 active:bg-surfaceMuted"
             onPress={() => setSelectedAnnouncement(a)}
           >
-            <Text className="font-semibold text-text">{a.title}</Text>
-            <Text className="mt-1 text-sm text-textMuted" numberOfLines={2}>
+            <Text style={{ fontFamily: font.semibold }} className="text-text">
+              {a.title}
+            </Text>
+            <Text style={{ fontFamily: font.regular }} className="mt-1 text-sm text-textMuted" numberOfLines={2}>
               {a.body}
             </Text>
           </Pressable>

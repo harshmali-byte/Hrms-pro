@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useHrmsData } from "@/context/HrmsDataContext";
+import { EmployeeNavProvider } from "@/context/EmployeeNavContext";
 import { AppShell } from "@/components/layout/AppShell";
 import {
   employeeNavItems,
@@ -24,7 +25,7 @@ function EmployeeScreen({
 }) {
   switch (route) {
     case "home":
-      return <EmployeeDashboard embedded onNavigate={setRoute} />;
+      return <EmployeeDashboard embedded />;
     case "attendance":
       return <AttendanceScreen embedded />;
     case "leave":
@@ -32,30 +33,46 @@ function EmployeeScreen({
     case "payslip":
       return <PayslipScreen embedded />;
     case "profile":
-      return <ProfileScreen embedded />;
+      return <ProfileScreen embedded routeKey={route} />;
     default:
       return <EmployeeDashboard embedded />;
   }
 }
 
-export function EmployeeTabs() {
+function EmployeeShell() {
   const { signOut, user } = useAuth();
-  const { currentEmployee } = useHrmsData();
+  const { currentEmployee, unreadNotificationCount } = useHrmsData();
   const [route, setRoute] = useState<EmployeeRouteId>("home");
 
-  return (
-    <AppShell
-      navItems={employeeNavItems}
-      activeId={route}
-      onNavigate={(id) => setRoute(id as EmployeeRouteId)}
-      pageTitle={employeePageTitles[route]}
-      pageSubtitle={employeePageSubtitles[route]}
-      userName={currentEmployee?.name ?? user?.name ?? "Employee"}
-      userRole="Employee"
-      avatarColor={currentEmployee?.avatarColor ?? "#0066FF"}
-      onSignOut={() => void signOut()}
-    >
-      <EmployeeScreen route={route} setRoute={setRoute} />
-    </AppShell>
+  const navItems = useMemo(
+    () =>
+      employeeNavItems.map((item) =>
+        item.id === "home" && unreadNotificationCount > 0
+          ? { ...item, badge: unreadNotificationCount }
+          : item,
+      ),
+    [unreadNotificationCount],
   );
+
+  return (
+    <EmployeeNavProvider onRouteChange={setRoute}>
+      <AppShell
+        navItems={navItems}
+        activeId={route}
+        onNavigate={(id) => setRoute(id as EmployeeRouteId)}
+        pageTitle={employeePageTitles[route]}
+        pageSubtitle={employeePageSubtitles[route]}
+        userName={currentEmployee?.name ?? user?.name ?? "Employee"}
+        userRole="Employee"
+        avatarColor={currentEmployee?.avatarColor ?? "#0066FF"}
+        onSignOut={() => void signOut()}
+      >
+        <EmployeeScreen route={route} setRoute={setRoute} />
+      </AppShell>
+    </EmployeeNavProvider>
+  );
+}
+
+export function EmployeeTabs() {
+  return <EmployeeShell />;
 }

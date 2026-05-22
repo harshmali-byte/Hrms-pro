@@ -2,6 +2,7 @@ import { Alert, Pressable, Text, View } from "react-native";
 import { font } from "@/constants/fonts";
 import { palette } from "@/constants/theme";
 import type { LeaveBalance, LeaveType } from "@/types";
+import type { LeavePolicy } from "@/types/config";
 import { Card } from "@/components/ui/Card";
 
 const labelByType: Record<LeaveType, string> = {
@@ -20,23 +21,28 @@ const accentByType: Record<LeaveType, string> = {
 
 interface Props {
   balance: LeaveBalance;
+  policy?: LeavePolicy | null;
+  onPolicyPress?: (policy: LeavePolicy | null, balance: LeaveBalance) => void;
 }
 
-export function LeaveBalanceCard({ balance }: Props) {
+export function LeaveBalanceCard({ balance, policy, onPolicyPress }: Props) {
   const remaining = Math.max(0, balance.total - balance.used);
   const ratio = balance.total === 0 ? 0 : Math.min(1, balance.used / balance.total);
   const accent = accentByType[balance.type];
   const label = labelByType[balance.type];
 
   const showPolicy = () => {
+    if (onPolicyPress) {
+      onPolicyPress(policy ?? null, balance);
+      return;
+    }
     Alert.alert(
       `${label} leave`,
       [
         `Balance: ${remaining} of ${balance.total} days remaining`,
         `Used this cycle: ${balance.used}`,
-        "",
-        "Demo: policy text and carry-forward rules would appear here.",
-      ].join("\n"),
+        policy?.description ?? "Policy details are managed by HR.",
+      ].join("\n\n"),
     );
   };
 

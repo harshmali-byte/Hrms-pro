@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Linking, Pressable, Text, View } from "react-native";
 import {
   Activity,
@@ -6,16 +6,24 @@ import {
   ExternalLink,
   Keyboard,
   Monitor,
+  RefreshCw,
   Timer,
 } from "lucide-react-native";
 import { font } from "@/constants/fonts";
 import { palette, iconSizes } from "@/constants/theme";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { fetchHubstaffSummary } from "@/api/hubstaffApi";
 import { useHrmsData } from "@/context/HrmsDataContext";
-import { buildHubstaffSummary, HUBSTAFF_APP_URL } from "@/utils/hubstaff";
+import {
+  buildHubstaffSummary,
+  HUBSTAFF_APP_URL,
+  mergeHubstaffResponse,
+} from "@/utils/hubstaff";
+import type { HubstaffSummary } from "@/types/hubstaff";
 
 const HUBSTAFF_GREEN = "#2EB67D";
+const DEFAULT_POLL_MS = 30_000;
 
 interface MetricProps {
   label: string;
@@ -67,17 +75,53 @@ interface HubstaffSummaryCardProps {
 export function HubstaffSummaryCard({ minHeight }: HubstaffSummaryCardProps = {}) {
   const { segments, isCheckedIn } = useHrmsData();
   const [tick, setTick] = useState(0);
+  const [syncing, setSyncing] = useState(false);
+  const [remote, setRemote] = useState<HubstaffSummary | null>(null);
 
-  useEffect(() => {
-    if (!isCheckedIn) return;
-    const t = setInterval(() => setTick((n) => n + 1), 60_000);
-    return () => clearInterval(t);
-  }, [isCheckedIn]);
-
-  const s = useMemo(
+  const fallback = useMemo(
     () => buildHubstaffSummary(segments, isCheckedIn, Date.now()),
     [segments, isCheckedIn, tick],
   );
+
+  const pollMs = remote?.pollIntervalMs ?? DEFAULT_POLL_MS;
+
+  const sync = useCallback(async () => {
+    const fb = buildHubstaffSummary(segments, isCheckedIn, Date.now());
+    setSyncing(true);
+    try {
+      const res = await fetchHubstaffSummary();
+      setRemote(mergeHubstaffResponse(res, fb));
+    } catch {
+      setRemote({ ...fb, syncStatus: "offline", source: "error", message: "Could not reach HRMS API" });
+    } finally {
+      setSyncing(false);
+    }
+  }, [segments, isCheckedIn]);
+
+  useEffect(() => {
+    void sync();
+  }, [sync]);
+
+  useEffect(() => {
+    const interval = setInterval(() => void sync(), pollMs);
+    return () => clearInterval(interval);
+  }, [pollMs, sync]);
+
+  useEffect(() => {
+    if (!isCheckedIn) return;
+    const fast = setInterval(() => setTick((n) => n + 1), 1000);
+    return () => clearInterval(fast);
+  }, [isCheckedIn]);
+
+  const s = remote ?? fallback;
+  const isLive = s.source === "hubstaff";
+  const badgeLabel = syncing
+    ? "Syncing"
+    : s.isTracking
+      ? "Tracking"
+      : s.syncStatus === "offline"
+        ? "Offline"
+        : "Synced";
 
   const openHubstaff = () => {
     Linking.openURL(HUBSTAFF_APP_URL).catch(() => {
@@ -107,20 +151,45 @@ export function HubstaffSummaryCard({ minHeight }: HubstaffSummaryCardProps = {}
               Hubstaff
             </Text>
             <Text style={{ fontFamily: font.regular }} className="text-xs text-textMuted">
-              Daily monitoring summary
+              {isLive ? "Live API sync" : "Daily monitoring summary"}
             </Text>
           </View>
         </View>
-        <Badge
-          label={s.isTracking ? "Tracking" : s.syncStatus === "offline" ? "Offline" : "Synced"}
-          tone={s.isTracking ? "success" : s.syncStatus === "offline" ? "neutral" : "info"}
-        />
+        <View className="flex-row items-center gap-2">
+          <Pressable
+            onPress={() => void sync()}
+            hitSlop={8}
+            className="h-8 w-8 items-center justify-center rounded-full active:bg-surfaceMuted"
+          >
+            <RefreshCw
+              size={16}
+              color={syncing ? palette.textSubtle : HUBSTAFF_GREEN}
+            />
+          </Pressable>
+          <Badge
+            label={badgeLabel}
+            tone={
+              syncing ? "info" : s.isTracking ? "success" : s.syncStatus === "offline" ? "neutral" : "info"
+            }
+          />
+        </View>
       </View>
 
       <Text style={{ fontFamily: font.regular }} className="mt-2 text-xs text-textSubtle">
-        Synced {s.lastSyncedLabel}
-        {s.isTracking ? " · Live activity from your workstation" : ""}
+        Synced {syncing ? "…" : s.lastSyncedLabel}
+        {s.isTracking && s.liveFromHubstaff
+          ? " · Hubstaff desktop timer active"
+          : s.isTracking
+            ? " · HRMS shift open"
+            : ""}
+        {isLive ? ` · refreshes every ${Math.round(pollMs / 1000)}s` : ""}
       </Text>
+
+      {s.message && !isLive ? (
+        <Text style={{ fontFamily: font.regular }} className="mt-2 text-xs text-warning">
+          {s.message}
+        </Text>
+      ) : null}
 
       <View className="mt-4 flex-row flex-wrap gap-2">
         <Metric label="Tracked today" value={s.trackedToday} icon={Timer} />
@@ -139,7 +208,9 @@ export function HubstaffSummaryCard({ minHeight }: HubstaffSummaryCardProps = {}
       <View className="mt-3 flex-row items-center">
         <Camera size={14} color={palette.textSubtle} />
         <Text style={{ fontFamily: font.regular }} className="ml-1.5 flex-1 text-xs text-textSubtle">
-          Hubstaff tracks apps, URLs, and optional screenshots per your org policy.
+          {isLive
+            ? "Data from Hubstaff API. Keep the desktop app running on the same work email."
+            : "Hubstaff tracks apps, URLs, and optional screenshots per your org policy."}
         </Text>
       </View>
 
