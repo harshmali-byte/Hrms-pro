@@ -3,6 +3,7 @@ import { useAuth } from "@/context/AuthContext";
 import { AppShell } from "@/components/layout/AppShell";
 import {
   adminNavItems,
+  adminPageSubtitles,
   adminPageTitles,
   type AdminRouteId,
 } from "./shellNav";
@@ -51,9 +52,10 @@ export function AdminTabs() {
       activeId={route}
       onNavigate={(id) => setRoute(id as AdminRouteId)}
       pageTitle={adminPageTitles[route]}
+      pageSubtitle={adminPageSubtitles[route]}
       userName={user?.name ?? "Admin"}
       userRole="Admin"
-      avatarColor="#4F6BED"
+      avatarColor="#0066FF"
       onSignOut={() => void signOut()}
     >
       <AdminScreen route={route} setRoute={setRoute} />

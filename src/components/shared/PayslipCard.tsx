@@ -1,19 +1,20 @@
 import { Alert, Pressable, Text, View } from "react-native";
-import { Download, FileText } from "lucide-react-native";
+import { Download, Eye, FileText } from "lucide-react-native";
 import { font } from "@/constants/fonts";
 import { palette, iconSizes } from "@/constants/theme";
 import type { Payslip } from "@/types";
 import { Badge } from "@/components/ui/Badge";
 
 const formatCurrency = (n: number) =>
-  `₹${n.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
+  `INR ${n.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
 
 interface Props {
   payslip: Payslip;
   onDownload?: (id: string) => void;
+  onPreview?: (id: string) => void;
 }
 
-export function PayslipCard({ payslip, onDownload }: Props) {
+export function PayslipCard({ payslip, onDownload, onPreview }: Props) {
   const isProcessing = payslip.status === "processing";
 
   const showDetail = () => {
@@ -52,22 +53,36 @@ export function PayslipCard({ payslip, onDownload }: Props) {
             ) : null}
           </View>
           <Text style={{ fontFamily: font.regular }} className="mt-0.5 text-sm text-textMuted">
-            Net {formatCurrency(payslip.net)} · Gross {formatCurrency(payslip.gross)}
+            Net {formatCurrency(payslip.net)} - Gross {formatCurrency(payslip.gross)}
           </Text>
         </View>
       </Pressable>
 
-      <Pressable
-        onPress={() => onDownload?.(payslip.id)}
-        disabled={isProcessing}
-        accessibilityRole="button"
-        accessibilityLabel="Download payslip PDF"
-        className={`h-10 w-10 items-center justify-center rounded-xl ${
-          isProcessing ? "opacity-40" : "active:bg-surfaceMuted"
-        }`}
-      >
-        <Download size={iconSizes.sm} color={palette.primary} />
-      </Pressable>
+      <View className="flex-row items-center">
+        <Pressable
+          onPress={() => onPreview?.(payslip.id)}
+          disabled={isProcessing}
+          accessibilityRole="button"
+          accessibilityLabel="Preview payslip PDF"
+          className={`h-10 w-10 items-center justify-center rounded-xl ${
+            isProcessing ? "opacity-40" : "active:bg-surfaceMuted"
+          }`}
+        >
+          <Eye size={iconSizes.sm} color={palette.primary} />
+        </Pressable>
+
+        <Pressable
+          onPress={() => onDownload?.(payslip.id)}
+          disabled={isProcessing}
+          accessibilityRole="button"
+          accessibilityLabel="Download payslip PDF"
+          className={`h-10 w-10 items-center justify-center rounded-xl ${
+            isProcessing ? "opacity-40" : "active:bg-surfaceMuted"
+          }`}
+        >
+          <Download size={iconSizes.sm} color={palette.primary} />
+        </Pressable>
+      </View>
     </View>
   );
 }

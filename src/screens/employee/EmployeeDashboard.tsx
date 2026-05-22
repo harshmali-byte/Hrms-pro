@@ -19,6 +19,7 @@ import { Card } from "@/components/ui/Card";
 import { Avatar } from "@/components/ui/Avatar";
 import { ActionTile } from "@/components/shared/ActionTile";
 import { AttendanceWidget } from "@/components/shared/AttendanceWidget";
+import { ProjectsShowcase } from "@/components/shared/ProjectsShowcase";
 import { AnnouncementCard } from "@/components/shared/AnnouncementCard";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { Badge } from "@/components/ui/Badge";
@@ -121,11 +122,13 @@ export function EmployeeDashboard({
         </Headline>
       </View>
 
-      <HelpBanner text="Use the bell in the top bar for notifications. Quick actions open each module." />
+      <HelpBanner text="Asquarify builds Ne Family (UK insurance) and Bakali (fresh mangoes) — clock in, track Hubstaff, and ship on time from Junagadh." />
 
       <View className={embedded ? "" : "mt-2"}>
         <AttendanceWidget />
       </View>
+
+      <ProjectsShowcase />
 
       <SectionHeader
         title="Quick actions"

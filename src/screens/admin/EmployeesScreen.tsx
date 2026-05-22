@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Alert, Pressable, Share, Text, View } from "react-native";
-import { Plus, Search, UserSearch } from "lucide-react-native";
+import { Plus, Save, Search, Trash2, UserSearch } from "lucide-react-native";
 import { font } from "@/constants/fonts";
 import type { Employee } from "@/types";
 import { ScreenContainer } from "@/components/ui/ScreenContainer";
@@ -32,15 +32,19 @@ const statusLabel: Record<Employee["status"], string> = {
 };
 
 export function EmployeesScreen({ embedded = false }: { embedded?: boolean }) {
-  const { employees, addEmployee, globalSearch } = useHrmsData();
+  const { employees, addEmployee, updateEmployee, deleteEmployee, globalSearch } = useHrmsData();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("All");
   const [selected, setSelected] = useState<Employee | null>(null);
   const [addOpen, setAddOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("");
   const [department, setDepartment] = useState("Engineering");
+  const [phone, setPhone] = useState("");
+  const [location, setLocation] = useState("");
+  const [status, setStatus] = useState<Employee["status"]>("active");
 
   const searchText = (globalSearch || query).trim().toLowerCase();
 
@@ -61,14 +65,82 @@ export function EmployeesScreen({ embedded = false }: { embedded?: boolean }) {
       Alert.alert("Missing fields", "Name, email, and role are required.");
       return;
     }
-    const ok = await addEmployee({ name, email, role, department });
-    if (ok) {
-      setAddOpen(false);
-      setName("");
-      setEmail("");
-      setRole("");
-      Alert.alert("Employee added", `${name.trim()} is now in the directory.`);
+    setSaving(true);
+    try {
+      const ok = await addEmployee({ name, email, role, department });
+      if (ok) {
+        setAddOpen(false);
+        setName("");
+        setEmail("");
+        setRole("");
+        setDepartment("Engineering");
+        Alert.alert("Employee added", `${name.trim()} is now in the directory.`);
+      }
+    } catch (e) {
+      Alert.alert("Could not save", e instanceof Error ? e.message : "Employee save failed.");
+    } finally {
+      setSaving(false);
     }
+  };
+
+  const openEmployee = (employee: Employee) => {
+    setSelected(employee);
+    setName(employee.name);
+    setEmail(employee.email);
+    setRole(employee.role);
+    setDepartment(employee.department);
+    setPhone(employee.phone);
+    setLocation(employee.location ?? "");
+    setStatus(employee.status);
+  };
+
+  const saveSelected = async () => {
+    if (!selected) return;
+    if (!name.trim() || !email.trim() || !role.trim()) {
+      Alert.alert("Missing fields", "Name, email, and role are required.");
+      return;
+    }
+    setSaving(true);
+    try {
+      await updateEmployee(selected.id, {
+        name,
+        email,
+        role,
+        department,
+        phone,
+        location,
+        status,
+      });
+      setSelected(null);
+      Alert.alert("Saved", `${name.trim()} has been updated.`);
+    } catch (e) {
+      Alert.alert("Could not save", e instanceof Error ? e.message : "Employee update failed.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const removeSelected = () => {
+    if (!selected) return;
+    Alert.alert("Delete employee?", `${selected.name} will be removed from the directory.`, [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          setSaving(true);
+          try {
+            await deleteEmployee(selected.id);
+            setSelected(null);
+            Alert.alert("Deleted", `${selected.name} was removed.`);
+          } catch (e) {
+            Alert.alert("Could not delete", e instanceof Error ? e.message : "Delete failed.");
+          } finally {
+            setSaving(false);
+          }
+        },
+      },
+    ]);
   };
 
   return (
@@ -122,7 +194,7 @@ export function EmployeesScreen({ embedded = false }: { embedded?: boolean }) {
           />
         ) : (
           list.map((e) => (
-            <EmployeeListItem key={e.id} employee={e} onPress={() => setSelected(e)} />
+            <EmployeeListItem key={e.id} employee={e} onPress={openEmployee} />
           ))
         )}
       </View>
@@ -131,7 +203,7 @@ export function EmployeesScreen({ embedded = false }: { embedded?: boolean }) {
         visible={addOpen}
         title="Add employee"
         onClose={() => setAddOpen(false)}
-        footer={<Button label="Save employee" fullWidth onPress={() => void submitAdd()} />}
+        footer={<Button label="Save employee" fullWidth loading={saving} onPress={() => void submitAdd()} />}
       >
         <View className="gap-3">
           <Input label="Full name" value={name} onChangeText={setName} placeholder="Jane Doe" />
@@ -154,8 +226,9 @@ export function EmployeesScreen({ embedded = false }: { embedded?: boolean }) {
 
       <BottomSheet
         visible={selected !== null}
-        title={selected?.name ?? "Employee"}
+        title={selected ? `Edit ${selected.name}` : "Employee"}
         onClose={() => setSelected(null)}
+        footer={<Button label="Save changes" icon={Save} fullWidth loading={saving} onPress={() => void saveSelected()} />}
       >
         {selected ? (
           <>
@@ -174,9 +247,35 @@ export function EmployeesScreen({ embedded = false }: { embedded?: boolean }) {
               </View>
             </View>
             <Divider className="mb-4" />
-            <InfoRow label="Email" value={selected.email} />
-            <InfoRow label="Phone" value={selected.phone} />
-            <InfoRow label="Joined" value={selected.joinedOn} />
+            <View className="gap-3">
+              <Input label="Full name" value={name} onChangeText={setName} />
+              <Input label="Work email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
+              <Input label="Role" value={role} onChangeText={setRole} />
+              <Input label="Department" value={department} onChangeText={setDepartment} />
+              <Input label="Phone" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+              <Input label="Location" value={location} onChangeText={setLocation} />
+              <Text style={{ fontFamily: font.medium }} className="text-sm text-textMuted">Status</Text>
+              <View className="flex-row flex-wrap gap-2">
+                {(["active", "onLeave", "probation"] as const).map((s) => {
+                  const active = status === s;
+                  return (
+                    <Pressable
+                      key={s}
+                      onPress={() => setStatus(s)}
+                      className={`rounded-full border px-3 py-2 ${
+                        active ? "border-primary bg-primary-soft" : "border-border bg-surface"
+                      }`}
+                    >
+                      <Text className={`text-sm font-medium ${active ? "text-primary" : "text-text"}`}>
+                        {statusLabel[s]}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+              <InfoRow label="Joined" value={selected.joinedOn} />
+              <Button label="Delete employee" icon={Trash2} variant="danger" fullWidth loading={saving} onPress={removeSelected} />
+            </View>
           </>
         ) : null}
       </BottomSheet>

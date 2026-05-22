@@ -1,5 +1,12 @@
 /** @type {import('tailwindcss').Config} */
-const { colors, radius, spacing, fontSize, letterSpacing } = require("./src/constants/tokens.cjs");
+const {
+  colors,
+  radius,
+  spacing,
+  fontSize,
+  letterSpacing,
+  boxShadow,
+} = require("./src/constants/tokens.cjs");
 
 module.exports = {
   content: ["./App.{js,jsx,ts,tsx}", "./src/**/*.{js,jsx,ts,tsx}"],
@@ -11,6 +18,7 @@ module.exports = {
       spacing,
       fontSize,
       letterSpacing,
+      boxShadow,
     },
   },
   plugins: [],

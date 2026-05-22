@@ -11,6 +11,7 @@ const tagToTone: Record<Announcement["tag"], BadgeTone> = {
   event: "primary",
   celebration: "success",
   general: "neutral",
+  project: "primary",
 };
 
 interface Props {

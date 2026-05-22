@@ -8,18 +8,17 @@ import {
   OrgEvent,
   Notice,
 } from "../models/index.js";
-import { formatPostedDate, newId } from "../utils/dates.js";
 
 export async function seedConfigData() {
   await CompanyProfile.upsert({
     id: "default",
-    legalName: "Organiq Private Limited",
-    displayName: "Organiq Pvt. Ltd.",
-    address: "91 Springboard, Koramangala, Bengaluru 560034",
+    legalName: "Asquarify Technologies",
+    displayName: "Asquarify",
+    address: "Junagadh, Gujarat 362001, India",
     country: "India",
-    industry: "Technology",
-    website: "https://organiq.co",
-    taxId: "GSTIN29ORG1234Z1",
+    industry: "Software & Automation",
+    website: "https://asquarify.com",
+    taxId: "GSTIN24ASQUARIFY1Z",
   });
 
   const policies = [
@@ -33,7 +32,7 @@ export async function seedConfigData() {
       minNoticeDays: 1,
       requiresApproval: true,
       active: true,
-      description: "Short personal errands and unplanned time off.",
+      description: "Short personal time — Junagadh team & remote-friendly.",
     },
     {
       id: "LP-SICK",
@@ -45,19 +44,19 @@ export async function seedConfigData() {
       minNoticeDays: 0,
       requiresApproval: true,
       active: true,
-      description: "Medical rest; doctor note required for 3+ consecutive days.",
+      description: "Medical rest; notify your lead on the same day.",
     },
     {
       id: "LP-EARNED",
       name: "Earned leave",
       type: "earned",
       daysPerYear: 18,
-      carryForwardLimit: 10,
+      carryForwardLimit: 8,
       isPaid: true,
-      minNoticeDays: 7,
+      minNoticeDays: 5,
       requiresApproval: true,
       active: true,
-      description: "Planned vacations; accrues monthly after probation.",
+      description: "Planned time off — align with project milestones (Ne Family, Bakali).",
     },
     {
       id: "LP-UNPAID",
@@ -69,7 +68,7 @@ export async function seedConfigData() {
       minNoticeDays: 3,
       requiresApproval: true,
       active: true,
-      description: "Extended leave without pay; manager and HR approval required.",
+      description: "Extended leave without pay — founder approval required.",
     },
   ];
   for (const p of policies) {
@@ -79,9 +78,9 @@ export async function seedConfigData() {
   const roles = [
     {
       id: "ROLE-ADMIN",
-      name: "HR Admin",
+      name: "Founder / HR Admin",
       slug: "hr-admin",
-      description: "Full access to HRMS configuration and approvals.",
+      description: "Full access — Bhargav & leadership.",
       permissions: [
         "employees.view",
         "employees.edit",
@@ -97,15 +96,15 @@ export async function seedConfigData() {
     },
     {
       id: "ROLE-MANAGER",
-      name: "People Manager",
+      name: "Tech Lead",
       slug: "manager",
-      description: "Manage team leave and view personnel.",
+      description: "Aftab & senior devs — team leave and delivery.",
       permissions: ["employees.view", "leave.view", "leave.approve", "payroll.view", "reports.view"],
       isSystem: true,
     },
     {
       id: "ROLE-EMPLOYEE",
-      name: "Employee",
+      name: "Team member",
       slug: "employee",
       description: "Self-service attendance, leave, and payslips.",
       permissions: ["employees.view", "leave.view"],
@@ -121,33 +120,33 @@ export async function seedConfigData() {
       id: "DT-OFFER",
       name: "Offer letter",
       category: "offer",
-      description: "Standard full-time offer with CTC breakdown.",
-      version: "2.1",
-      updatedAtLabel: "10 May 2026",
+      description: "Asquarify full-time offer — automation-first culture.",
+      version: "2026.1",
+      updatedAtLabel: "01 Jan 2026",
     },
     {
       id: "DT-WFH",
-      name: "WFH policy",
+      name: "Remote & Hubstaff policy",
       category: "policy",
-      description: "Hybrid work policy effective June 2026.",
-      version: "1.4",
-      updatedAtLabel: "14 May 2026",
+      description: "Core hours, Hubstaff tracking, and client delivery standards.",
+      version: "1.0",
+      updatedAtLabel: "10 Feb 2026",
     },
     {
       id: "DT-EXP",
       name: "Experience letter",
       category: "letter",
-      description: "Issued on separation with tenure summary.",
+      description: "Issued on separation with project summary.",
       version: "1.0",
       updatedAtLabel: "01 Jan 2026",
     },
     {
-      id: "DT-TAX",
-      name: "Form 16",
+      id: "DT-NDA",
+      name: "Client NDA — Ne Family / Bakali",
       category: "form",
-      description: "Annual tax certificate for payroll year.",
-      version: "FY26",
-      updatedAtLabel: "12 Apr 2026",
+      description: "Standard NDA for insurance and commerce clients.",
+      version: "2026",
+      updatedAtLabel: "15 Mar 2026",
     },
   ];
   for (const t of templates) {
@@ -155,16 +154,16 @@ export async function seedConfigData() {
   }
 
   const events = [
-    { id: "E1", title: "Town hall", whenLabel: "Fri 4 PM · Main hall", sortOrder: 1 },
-    { id: "E2", title: "Design critique", whenLabel: "Mon 11 AM · Zoom", sortOrder: 2 },
-    { id: "E3", title: "Benefits Q&A", whenLabel: "Wed 3 PM · People lounge", sortOrder: 3 },
+    { id: "E1", title: "Ne Family — UAT review", whenLabel: "Thu 4 PM · Engineering", sortOrder: 1 },
+    { id: "E2", title: "Bakali harvest stand-up", whenLabel: "Mon 11 AM · Creative + Eng", sortOrder: 2 },
+    { id: "E3", title: "Founders sync", whenLabel: "Wed 6 PM · Junagadh HQ", sortOrder: 3 },
   ];
   for (const e of events) await OrgEvent.upsert(e);
 
   const notices = [
-    { id: "NB1", title: "Hybrid policy update", dateLabel: "14 May 2026", sortOrder: 1 },
-    { id: "NB2", title: "Security training due", dateLabel: "18 May 2026", sortOrder: 2 },
-    { id: "NB3", title: "Office maintenance", dateLabel: "20 May 2026", sortOrder: 3 },
+    { id: "NB1", title: "Ne Family release window", dateLabel: "28 May 2026", sortOrder: 1 },
+    { id: "NB2", title: "Bakali — peak season hours", dateLabel: "01 Jun 2026", sortOrder: 2 },
+    { id: "NB3", title: "Hubstaff compliance check", dateLabel: "Every Friday", sortOrder: 3 },
   ];
   for (const n of notices) await Notice.upsert(n);
 
@@ -189,24 +188,24 @@ export async function seedConfigData() {
         userName: "System",
         action: "seed",
         resource: "database",
-        details: "Initial demo data loaded",
+        details: "Asquarify HRMS demo data loaded",
         offsetMs: 0,
       },
       {
         id: "AUD-SEED-02",
-        userName: "John Doe",
+        userName: "Bhargav Purohit",
         action: "login",
         resource: "auth",
-        details: "Admin signed in",
+        details: "Founder admin signed in",
         offsetMs: -3600000,
       },
       {
         id: "AUD-SEED-03",
-        userName: "Priya Sharma",
+        userName: "Aftab Alam",
         action: "update",
-        resource: "leave_policy",
-        resourceId: "LP-CASUAL",
-        details: "Casual leave carry-forward set to 3 days",
+        resource: "project",
+        resourceId: "ne-family",
+        details: "Ne Family claims module marked ready for UAT",
         offsetMs: -86400000,
       },
     ];
@@ -224,5 +223,5 @@ export async function seedConfigData() {
     }
   }
 
-  console.log("Configuration data seeded.");
+  console.log("Configuration data seeded (Asquarify).");
 }

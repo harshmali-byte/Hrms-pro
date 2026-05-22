@@ -17,6 +17,10 @@ import { Announcement } from "./Announcement.js";
 import { Holiday } from "./Holiday.js";
 import { OrgEvent } from "./OrgEvent.js";
 import { Notice } from "./Notice.js";
+import { EmployeeDocument } from "./EmployeeDocument.js";
+import { PrivacyPreference } from "./PrivacyPreference.js";
+import { SupportTicket } from "./SupportTicket.js";
+import { UserPreference } from "./UserPreference.js";
 
 Employee.hasMany(LeaveRequest, { foreignKey: "employeeId" });
 LeaveRequest.belongsTo(Employee, { foreignKey: "employeeId" });
@@ -31,6 +35,18 @@ Employee.hasMany(Payslip, { foreignKey: "employeeId" });
 Payslip.belongsTo(Employee, { foreignKey: "employeeId" });
 
 User.belongsTo(Employee, { foreignKey: "employeeId", targetKey: "id", constraints: false });
+
+Employee.hasMany(EmployeeDocument, { foreignKey: "employeeId" });
+EmployeeDocument.belongsTo(Employee, { foreignKey: "employeeId" });
+
+Employee.hasOne(PrivacyPreference, { foreignKey: "employeeId" });
+PrivacyPreference.belongsTo(Employee, { foreignKey: "employeeId" });
+
+Employee.hasMany(SupportTicket, { foreignKey: "employeeId" });
+SupportTicket.belongsTo(Employee, { foreignKey: "employeeId" });
+
+Employee.hasOne(UserPreference, { foreignKey: "employeeId" });
+UserPreference.belongsTo(Employee, { foreignKey: "employeeId" });
 
 export {
   sequelize,
@@ -52,4 +68,8 @@ export {
   Holiday,
   OrgEvent,
   Notice,
+  EmployeeDocument,
+  PrivacyPreference,
+  SupportTicket,
+  UserPreference,
 };

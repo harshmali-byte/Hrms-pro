@@ -3,12 +3,11 @@ import { font } from "@/constants/fonts";
 
 type Props = TextProps & { className?: string; children: React.ReactNode };
 
-/** Screen title — largest heading. */
 export function H1({ className = "", style, children, ...rest }: Props) {
   return (
     <Text
       style={[{ fontFamily: font.bold }, style]}
-      className={`text-2xl tracking-tight text-text ${className}`}
+      className={`text-3xl tracking-tight text-text ${className}`}
       {...rest}
     >
       {children}
@@ -16,12 +15,11 @@ export function H1({ className = "", style, children, ...rest }: Props) {
   );
 }
 
-/** Subtitle under screen title. */
 export function Lead({ className = "", style, children, ...rest }: Props) {
   return (
     <Text
       style={[{ fontFamily: font.regular }, style]}
-      className={`mt-1.5 text-base leading-6 text-textMuted ${className}`}
+      className={`mt-1 text-base leading-6 text-textMuted ${className}`}
       {...rest}
     >
       {children}
@@ -29,7 +27,6 @@ export function Lead({ className = "", style, children, ...rest }: Props) {
   );
 }
 
-/** Section headings (“Quick actions”, etc.). */
 export function SectionTitle({ className = "", style, children, ...rest }: Props) {
   return (
     <Text
@@ -42,7 +39,6 @@ export function SectionTitle({ className = "", style, children, ...rest }: Props
   );
 }
 
-/** Inline link / “See all”. */
 export function LinkLabel({ className = "", style, children, ...rest }: Props) {
   return (
     <Text
@@ -55,7 +51,6 @@ export function LinkLabel({ className = "", style, children, ...rest }: Props) {
   );
 }
 
-/** Primary body copy. */
 export function Body({ className = "", style, children, ...rest }: Props) {
   return (
     <Text
@@ -68,7 +63,6 @@ export function Body({ className = "", style, children, ...rest }: Props) {
   );
 }
 
-/** Secondary body (descriptions). */
 export function BodyMuted({ className = "", style, children, ...rest }: Props) {
   return (
     <Text
@@ -81,7 +75,6 @@ export function BodyMuted({ className = "", style, children, ...rest }: Props) {
   );
 }
 
-/** Marketing / login headline (smaller than H1). */
 export function H2({ className = "", style, children, ...rest }: Props) {
   return (
     <Text
@@ -94,7 +87,6 @@ export function H2({ className = "", style, children, ...rest }: Props) {
   );
 }
 
-/** Dashboard user name line. */
 export function Headline({ className = "", style, children, ...rest }: Props) {
   return (
     <Text
@@ -107,7 +99,6 @@ export function Headline({ className = "", style, children, ...rest }: Props) {
   );
 }
 
-/** Meta / helper under titles (“Welcome back”). */
 export function Kicker({ className = "", style, children, ...rest }: Props) {
   return (
     <Text
@@ -120,7 +111,6 @@ export function Kicker({ className = "", style, children, ...rest }: Props) {
   );
 }
 
-/** Small labels (form fields). */
 export function Label({ className = "", style, children, ...rest }: Props) {
   return (
     <Text
@@ -133,7 +123,6 @@ export function Label({ className = "", style, children, ...rest }: Props) {
   );
 }
 
-/** Stat labels, list metadata. */
 export function Meta({ className = "", style, children, ...rest }: Props) {
   return (
     <Text
@@ -146,7 +135,6 @@ export function Meta({ className = "", style, children, ...rest }: Props) {
   );
 }
 
-/** Stat / KPI numbers. */
 export function StatValue({ className = "", style, children, ...rest }: Props) {
   return (
     <Text
@@ -159,7 +147,6 @@ export function StatValue({ className = "", style, children, ...rest }: Props) {
   );
 }
 
-/** Small muted line (stat footnote, timestamps). */
 export function Fineprint({ className = "", style, children, ...rest }: Props) {
   return (
     <Text

@@ -81,7 +81,7 @@ export interface Announcement {
   body: string;
   postedBy: string;
   postedOn: string;
-  tag: "policy" | "event" | "celebration" | "general";
+  tag: "policy" | "event" | "celebration" | "general" | "project";
 }
 
 export interface Holiday {
@@ -104,4 +104,57 @@ export interface HrmsNotification {
   body: string;
   read: boolean;
   createdAt: string;
+}
+
+export type EmployeeDocumentCategory =
+  | "identity"
+  | "employment"
+  | "payroll"
+  | "education"
+  | "other";
+
+export interface EmployeeDocument {
+  id: string;
+  title: string;
+  category: EmployeeDocumentCategory;
+  fileUrl: string;
+  notes: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PrivacyPreferences {
+  profileVisibility: "team" | "managers" | "private";
+  shareBirthday: boolean;
+  sharePhone: boolean;
+  twoFactorEnabled: boolean;
+}
+
+export type SupportTicketStatus = "open" | "in_progress" | "resolved" | "closed";
+export type SupportTicketPriority = "low" | "medium" | "high";
+
+export interface SupportTicket {
+  id: string;
+  subject: string;
+  message: string;
+  status: SupportTicketStatus;
+  priority: SupportTicketPriority;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AccountSettings {
+  language: string;
+  timezone: string;
+  emailNotifications: boolean;
+  pushNotifications: boolean;
+  compactMode: boolean;
+}
+
+export interface AccountOverview {
+  employee: Employee;
+  documents: EmployeeDocument[];
+  privacy: PrivacyPreferences;
+  supportTickets: SupportTicket[];
+  settings: AccountSettings;
 }

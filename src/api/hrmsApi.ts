@@ -204,12 +204,30 @@ export async function addEmployee(input: {
   });
 }
 
+export async function updateEmployee(
+  id: string,
+  input: Partial<Pick<Employee, "name" | "email" | "phone" | "role" | "department" | "status" | "location" | "reportsTo">>,
+): Promise<Employee> {
+  return apiFetch<Employee>(`/employees/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function deleteEmployee(id: string): Promise<void> {
+  await apiFetch(`/employees/${id}`, { method: "DELETE" });
+}
+
 export async function getPayslipsFromApi(): Promise<Payslip[]> {
   return apiFetch<Payslip[]>("/payroll/payslips");
 }
 
 export async function advancePayrollStep(): Promise<PayrollPersist> {
   return apiFetch<PayrollPersist>("/payroll/advance", { method: "POST" });
+}
+
+export async function publishPayrollPayslips(): Promise<{ published: number }> {
+  return apiFetch<{ published: number }>("/payroll/publish", { method: "POST" });
 }
 
 export async function markNotificationReadApi(id: string): Promise<void> {

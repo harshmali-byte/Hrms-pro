@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { Alert, Pressable, Text, View } from "react-native";
-import { ChevronRight, Plus } from "lucide-react-native";
+import { Eye, Plus } from "lucide-react-native";
 import {
   createDocumentTemplate,
   deleteDocumentTemplate,
   fetchDocumentTemplates,
+  updateDocumentTemplate,
 } from "@/api/configApi";
 import { ApiError } from "@/api/client";
 import { ScreenContainer } from "@/components/ui/ScreenContainer";
@@ -19,11 +20,22 @@ import { font } from "@/constants/fonts";
 import { iconSizes, palette } from "@/constants/theme";
 import type { DocumentTemplate } from "@/types/config";
 
+const templateCategories: DocumentTemplate["category"][] = [
+  "offer",
+  "policy",
+  "letter",
+  "form",
+  "other",
+];
+
 export function TemplatesConfig({ onBack }: { onBack: () => void }) {
   const [templates, setTemplates] = useState<DocumentTemplate[]>([]);
-  const [showAdd, setShowAdd] = useState(false);
+  const [showEditor, setShowEditor] = useState(false);
+  const [edit, setEdit] = useState<DocumentTemplate | null>(null);
   const [name, setName] = useState("");
+  const [category, setCategory] = useState<DocumentTemplate["category"]>("other");
   const [description, setDescription] = useState("");
+  const [version, setVersion] = useState("1.0");
   const [saving, setSaving] = useState(false);
 
   const load = useCallback(() => {
@@ -36,20 +48,52 @@ export function TemplatesConfig({ onBack }: { onBack: () => void }) {
     load();
   }, [load]);
 
-  const addTemplate = async () => {
+  const resetForm = () => {
+    setEdit(null);
+    setName("");
+    setCategory("other");
+    setDescription("");
+    setVersion("1.0");
+  };
+
+  const openCreate = () => {
+    resetForm();
+    setShowEditor(true);
+  };
+
+  const openEdit = (template: DocumentTemplate) => {
+    setEdit(template);
+    setName(template.name);
+    setCategory(template.category);
+    setDescription(template.description ?? "");
+    setVersion(template.version);
+    setShowEditor(true);
+  };
+
+  const saveTemplate = async () => {
     if (!name.trim()) {
       Alert.alert("Name required", "Enter a template name.");
       return;
     }
     setSaving(true);
     try {
-      await createDocumentTemplate({ name: name.trim(), description, category: "other" });
-      setShowAdd(false);
-      setName("");
-      setDescription("");
+      const payload = {
+        name: name.trim(),
+        category,
+        description: description.trim(),
+        version: version.trim() || "1.0",
+      };
+      if (edit) {
+        await updateDocumentTemplate(edit.id, payload);
+      } else {
+        await createDocumentTemplate(payload);
+      }
+      setShowEditor(false);
+      resetForm();
       load();
+      Alert.alert("Saved", edit ? "Template updated." : "Template created.");
     } catch (e) {
-      Alert.alert("Error", e instanceof ApiError ? e.message : "Create failed");
+      Alert.alert("Error", e instanceof ApiError ? e.message : "Save failed");
     } finally {
       setSaving(false);
     }
@@ -73,13 +117,26 @@ export function TemplatesConfig({ onBack }: { onBack: () => void }) {
     ]);
   };
 
+  const previewTemplate = (template: DocumentTemplate) => {
+    Alert.alert(
+      template.name,
+      [
+        `Category: ${template.category.toUpperCase()}`,
+        `Version: ${template.version}`,
+        `Updated: ${template.updatedAt}`,
+        "",
+        template.description?.trim() || "No preview content has been added yet.",
+      ].join("\n"),
+    );
+  };
+
   return (
     <ScreenContainer embedded>
       <ConfigBackBar title="Templates & documents" onBack={onBack} />
-      <HelpBanner text="HR document library. Tap to view; long-press delete (custom templates only)." />
+      <HelpBanner text="HR document library. Tap to edit; long-press delete." />
 
       <Pressable
-        onPress={() => setShowAdd(true)}
+        onPress={openCreate}
         className="mb-4 flex-row items-center justify-center rounded-xl border border-dashed border-primary bg-primary-soft py-3 active:opacity-90"
       >
         <Plus size={iconSizes.sm} color={palette.primary} />
@@ -91,33 +148,72 @@ export function TemplatesConfig({ onBack }: { onBack: () => void }) {
       <Card padded={false} elevated={false} className="overflow-hidden">
         {templates.map((t, idx) => (
           <View key={t.id}>
-            <Pressable
-              onPress={() =>
-                Alert.alert(t.name, `${t.category.toUpperCase()} · v${t.version}\n\n${t.description ?? ""}\n\nUpdated ${t.updatedAt}`)
-              }
-              onLongPress={() => remove(t)}
-              className="flex-row items-center px-4 py-3.5 active:bg-surfaceMuted"
-            >
-              <View className="flex-1">
+            <View className="flex-row items-center px-4 py-3.5">
+              <Pressable
+                onPress={() => openEdit(t)}
+                onLongPress={() => remove(t)}
+                className="flex-1 active:opacity-80"
+              >
                 <Text style={{ fontFamily: font.semibold }} className="text-base text-text">
                   {t.name}
                 </Text>
                 <Text style={{ fontFamily: font.regular }} className="mt-0.5 text-sm text-textMuted">
-                  {t.category} · v{t.version} · {t.updatedAt}
+                  {t.category} - v{t.version} - {t.updatedAt}
                 </Text>
-              </View>
-              <ChevronRight size={iconSizes.sm} color={palette.textSubtle} />
-            </Pressable>
+              </Pressable>
+              <Pressable
+                onPress={() => previewTemplate(t)}
+                accessibilityRole="button"
+                accessibilityLabel={`Preview ${t.name}`}
+                className="ml-3 h-9 w-9 items-center justify-center rounded-full border border-border bg-surface active:bg-surfaceMuted"
+              >
+                <Eye size={iconSizes.sm} color={palette.primary} />
+              </Pressable>
+            </View>
             {idx < templates.length - 1 ? <Divider /> : null}
           </View>
         ))}
       </Card>
 
-      <BottomSheet visible={showAdd} onClose={() => setShowAdd(false)} title="New template">
+      <BottomSheet
+        visible={showEditor}
+        onClose={() => {
+          setShowEditor(false);
+          resetForm();
+        }}
+        title={edit ? "Edit template" : "New template"}
+      >
         <View className="gap-3">
           <Input label="Name" value={name} onChangeText={setName} />
+          <Text style={{ fontFamily: font.medium }} className="text-sm text-textMuted">
+            Category
+          </Text>
+          <View className="flex-row flex-wrap gap-2">
+            {templateCategories.map((c) => {
+              const active = c === category;
+              return (
+                <Pressable
+                  key={c}
+                  onPress={() => setCategory(c)}
+                  className={`rounded-full border px-3 py-2 ${
+                    active ? "border-primary bg-primary-soft" : "border-border bg-surface"
+                  }`}
+                >
+                  <Text className={`text-sm font-medium ${active ? "text-primary" : "text-text"}`}>
+                    {c}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+          <Input label="Version" value={version} onChangeText={setVersion} />
           <Input label="Description" value={description} onChangeText={setDescription} multiline />
-          <Button label="Create" fullWidth loading={saving} onPress={() => void addTemplate()} />
+          <Button
+            label={edit ? "Save template" : "Create template"}
+            fullWidth
+            loading={saving}
+            onPress={() => void saveTemplate()}
+          />
         </View>
       </BottomSheet>
     </ScreenContainer>

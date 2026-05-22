@@ -13,6 +13,7 @@ import {
   clockInApi,
   clockOutApi,
   computeDashboardStats,
+  deleteEmployee as apiDeleteEmployee,
   fetchAttendanceHistory,
   fetchBootstrap,
   fetchDashboardCharts,
@@ -22,9 +23,11 @@ import {
   getPayslipsFromApi,
   markAllNotificationsReadApi,
   markNotificationReadApi,
+  publishPayrollPayslips,
   resetAllData,
   saveAttendance,
   submitLeaveRequest,
+  updateEmployee as apiUpdateEmployee,
   updateLeaveStatus,
   type DashboardStats,
   type DemoPersist,
@@ -77,6 +80,13 @@ export interface HrmsDataContextValue {
     role: string;
     department: string;
   }) => Promise<boolean>;
+  updateEmployee: (
+    id: string,
+    input: Partial<
+      Pick<Employee, "name" | "email" | "phone" | "role" | "department" | "status" | "location" | "reportsTo">
+    >,
+  ) => Promise<boolean>;
+  deleteEmployee: (id: string) => Promise<boolean>;
 
   leaveRequests: LeaveRequest[];
   leaveBalances: LeaveBalance[];
@@ -99,6 +109,7 @@ export interface HrmsDataContextValue {
   payslips: Payslip[];
   payroll: PayrollPersist;
   advancePayrollRun: () => Promise<PayrollPersist | null>;
+  publishPayslips: () => Promise<number>;
 
   dashboardStats: DashboardStats;
   dashboardCharts: DashboardCharts | null;
@@ -214,17 +225,27 @@ export function HrmsDataProvider({ children }: { children: ReactNode }) {
   const segments = attendanceDay.segments;
   const attendanceDateKey = attendanceDay.dateKey;
 
+  const refreshAttendanceHistory = useCallback(async () => {
+    if (!user?.employeeId) return;
+    try {
+      const history = await fetchAttendanceHistory(14);
+      setAttendanceHistory(history);
+    } catch {
+      /* keep existing history */
+    }
+  }, [user?.employeeId]);
+
   const clockIn = useCallback(async () => {
     const next = await clockInApi();
     setAttendanceDay(next);
-    await loadAll();
-  }, [loadAll]);
+    void refreshAttendanceHistory();
+  }, [refreshAttendanceHistory]);
 
   const clockOut = useCallback(async () => {
     const next = await clockOutApi();
     setAttendanceDay(next);
-    await loadAll();
-  }, [loadAll]);
+    void refreshAttendanceHistory();
+  }, [refreshAttendanceHistory]);
 
   const isCheckedIn =
     segments.length > 0 && segments[segments.length - 1].out === null;
@@ -320,11 +341,57 @@ export function HrmsDataProvider({ children }: { children: ReactNode }) {
     [loadAll],
   );
 
+  const updateEmployee = useCallback(
+    async (
+      id: string,
+      input: Partial<
+        Pick<Employee, "name" | "email" | "phone" | "role" | "department" | "status" | "location" | "reportsTo">
+      >,
+    ) => {
+      const employee = await apiUpdateEmployee(id, input);
+      setDemo((d) =>
+        d
+          ? {
+              ...d,
+              employees: d.employees.map((e) => (e.id === id ? employee : e)),
+            }
+          : d,
+      );
+      await loadAll();
+      return true;
+    },
+    [loadAll],
+  );
+
+  const deleteEmployee = useCallback(
+    async (id: string) => {
+      await apiDeleteEmployee(id);
+      setDemo((d) =>
+        d
+          ? {
+              ...d,
+              employees: d.employees.filter((e) => e.id !== id),
+              leaveRequests: d.leaveRequests.filter((r) => r.employeeId !== id),
+            }
+          : d,
+      );
+      await loadAll();
+      return true;
+    },
+    [loadAll],
+  );
+
   const advancePayrollRun = useCallback(async () => {
     const next = await advancePayrollStep();
     setPayroll(next);
     await loadAll();
     return next;
+  }, [loadAll]);
+
+  const publishPayslips = useCallback(async () => {
+    const result = await publishPayrollPayslips();
+    await loadAll();
+    return result.published;
   }, [loadAll]);
 
   const markNotificationRead = useCallback(
@@ -380,6 +447,8 @@ export function HrmsDataProvider({ children }: { children: ReactNode }) {
       lastEventHint,
       employees,
       addEmployee,
+      updateEmployee,
+      deleteEmployee,
       leaveRequests,
       leaveBalances,
       myLeaveRequestsList,
@@ -393,6 +462,7 @@ export function HrmsDataProvider({ children }: { children: ReactNode }) {
       payslips,
       payroll: payroll ?? { steps: [], runStatus: "In progress" },
       advancePayrollRun,
+      publishPayslips,
       dashboardStats,
       dashboardCharts,
       announcements,
@@ -418,6 +488,8 @@ export function HrmsDataProvider({ children }: { children: ReactNode }) {
       lastEventHint,
       employees,
       addEmployee,
+      updateEmployee,
+      deleteEmployee,
       leaveRequests,
       leaveBalances,
       myLeaveRequestsList,
@@ -431,6 +503,7 @@ export function HrmsDataProvider({ children }: { children: ReactNode }) {
       payslips,
       payroll,
       advancePayrollRun,
+      publishPayslips,
       dashboardStats,
       dashboardCharts,
       announcements,

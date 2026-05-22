@@ -48,7 +48,7 @@ router.get("/summary", async (_req, res) => {
   const company = await CompanyProfile.findByPk("default");
   const prefs = await OrgPreferences.findByPk("default");
   res.json({
-    companyDisplayName: company?.displayName ?? "Organiq Pvt. Ltd.",
+    companyDisplayName: company?.displayName ?? "Asquarify",
     localeLabel: prefs ? `${prefs.country} · ${prefs.currency}` : "India · INR",
   });
 });
@@ -58,11 +58,11 @@ router.get("/company", async (_req, res) => {
   if (!row) {
     row = await CompanyProfile.create({
       id: "default",
-      legalName: "Organiq Private Limited",
-      displayName: "Organiq Pvt. Ltd.",
-      address: "",
+      legalName: "Asquarify Technologies",
+      displayName: "Asquarify",
+      address: "Junagadh, Gujarat 362001, India",
       country: "India",
-      industry: "Technology",
+      industry: "Software & Automation",
     });
   }
   res.json(toCompanyJson(row));

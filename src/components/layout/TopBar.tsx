@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Pressable, Text, TextInput, View, useWindowDimensions } from "react-native";
-import { Bell, Globe, Search } from "lucide-react-native";
+import { Bell, ChevronDown, Search } from "lucide-react-native";
 import { font } from "@/constants/fonts";
 import { palette, iconSizes, layout } from "@/constants/theme";
 import { Avatar } from "@/components/ui/Avatar";
@@ -8,74 +8,83 @@ import { useHrmsData } from "@/context/HrmsDataContext";
 import { NotificationsSheet } from "./NotificationsSheet";
 
 interface Props {
-  title: string;
   userName: string;
+  userRole: string;
   avatarColor: string;
 }
 
-export function TopBar({ title, userName, avatarColor }: Props) {
+export function TopBar({ userName, userRole, avatarColor }: Props) {
   const { unreadNotificationCount, globalSearch, setGlobalSearch } = useHrmsData();
   const [notifOpen, setNotifOpen] = useState(false);
   const { width } = useWindowDimensions();
-  const stacked = width < 720;
+  const compact = width < 720;
 
   return (
     <>
       <View
         style={{ minHeight: layout.topBarHeight }}
-        className={`border-b border-border bg-surface px-4 py-3 ${stacked ? "" : "flex-row items-center"}`}
+        className="flex-row items-center border-b border-border bg-surface px-5 py-3"
       >
-        <Text
-          style={{ fontFamily: font.bold }}
-          className={`text-xl text-text ${stacked ? "mb-3" : "mr-4"}`}
+        <View
+          className={`min-h-[44px] flex-1 flex-row items-center rounded-full border border-border bg-surfaceMuted px-4 ${
+            compact ? "" : "max-w-2xl"
+          }`}
         >
-          {title}
-        </Text>
+          <Search size={iconSizes.sm} color={palette.textSubtle} />
+          <TextInput
+            placeholder="Search employees, leave, payroll…"
+            placeholderTextColor={palette.textSubtle}
+            value={globalSearch}
+            onChangeText={setGlobalSearch}
+            style={{
+              fontFamily: font.regular,
+              flex: 1,
+              marginLeft: 10,
+              fontSize: 14,
+              color: palette.text,
+              paddingVertical: 10,
+            }}
+          />
+        </View>
 
-        <View className={`flex-1 flex-row items-center ${stacked ? "flex-wrap gap-2" : ""}`}>
-          <View
-            className={`min-h-[40px] flex-row items-center rounded-lg border border-border bg-surfaceMuted px-3 py-2 ${
-              stacked ? "w-full" : "mx-3 max-w-[360px] flex-1"
-            }`}
+        <View className="ml-3 flex-row items-center">
+          <Pressable
+            onPress={() => setNotifOpen(true)}
+            accessibilityLabel="Notifications"
+            className="relative mr-2 h-10 w-10 items-center justify-center rounded-full active:bg-surfaceMuted"
           >
-            <Search size={iconSizes.sm} color={palette.textSubtle} />
-            <TextInput
-              placeholder="Search anything..."
-              placeholderTextColor={palette.textSubtle}
-              value={globalSearch}
-              onChangeText={setGlobalSearch}
-              style={{
-                fontFamily: font.regular,
-                flex: 1,
-                marginLeft: 8,
-                fontSize: 14,
-                color: palette.text,
-                paddingVertical: 4,
-              }}
-            />
-          </View>
+            <Bell size={iconSizes.md} color={palette.textMuted} />
+            {unreadNotificationCount > 0 ? (
+              <View className="absolute right-1 top-1 min-w-[18px] items-center justify-center rounded-full bg-danger px-1">
+                <Text style={{ fontFamily: font.bold }} className="text-[10px] text-textInverse">
+                  {unreadNotificationCount > 9 ? "9+" : unreadNotificationCount}
+                </Text>
+              </View>
+            ) : null}
+          </Pressable>
 
-          <View className="flex-row items-center">
-            <Pressable
-              onPress={() => setNotifOpen(true)}
-              accessibilityLabel="Notifications"
-              className="relative mr-2 h-10 w-10 items-center justify-center rounded-lg active:bg-surfaceMuted"
-            >
-              <Bell size={iconSizes.md} color={palette.textMuted} />
-              {unreadNotificationCount > 0 ? (
-                <View className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-danger" />
-              ) : null}
-            </Pressable>
-
-            <Pressable className="mr-2 flex-row items-center rounded-lg border border-border px-2.5 py-2 active:bg-surfaceMuted">
-              <Globe size={iconSizes.sm} color={palette.textMuted} />
-              <Text style={{ fontFamily: font.medium }} className="ml-1.5 text-sm text-textMuted">
-                English
-              </Text>
-            </Pressable>
-
+          <Pressable className="flex-row items-center rounded-full border border-border bg-surface px-2 py-1.5 active:bg-surfaceMuted">
             <Avatar name={userName} color={avatarColor} size="sm" />
-          </View>
+            {!compact ? (
+              <View className="ml-2 mr-1 max-w-[140px]">
+                <Text
+                  style={{ fontFamily: font.semibold }}
+                  className="text-sm text-text"
+                  numberOfLines={1}
+                >
+                  {userName}
+                </Text>
+                <Text
+                  style={{ fontFamily: font.regular }}
+                  className="text-xs text-textMuted"
+                  numberOfLines={1}
+                >
+                  {userRole}
+                </Text>
+              </View>
+            ) : null}
+            <ChevronDown size={14} color={palette.textSubtle} style={{ marginLeft: 4 }} />
+          </Pressable>
         </View>
       </View>
 

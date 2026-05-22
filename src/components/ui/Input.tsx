@@ -13,7 +13,6 @@ interface Props extends TextInputProps {
 
 export function Input({ label, icon: Icon, error, onFocus, onBlur, ...rest }: Props) {
   const [focused, setFocused] = useState(false);
-
   const borderColor = error
     ? "border-danger"
     : focused
@@ -23,9 +22,8 @@ export function Input({ label, icon: Icon, error, onFocus, onBlur, ...rest }: Pr
   return (
     <View className="w-full">
       {label ? <Label className="mb-2">{label}</Label> : null}
-
       <View
-        className={`min-h-[48px] flex-row items-center rounded-xl border bg-surface px-3.5 ${borderColor}`}
+        className={`min-h-[48px] flex-row items-center rounded-xl border bg-surfaceMuted px-4 ${borderColor}`}
       >
         {Icon ? (
           <Icon size={iconSizes.sm} color={palette.textMuted} style={{ marginRight: 10 }} />
@@ -45,7 +43,6 @@ export function Input({ label, icon: Icon, error, onFocus, onBlur, ...rest }: Pr
           {...rest}
         />
       </View>
-
       {error ? (
         <Text style={{ fontFamily: font.medium }} className="mt-1.5 text-xs text-danger">
           {error}

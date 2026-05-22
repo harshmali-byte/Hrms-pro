@@ -56,5 +56,5 @@ npm run dev            # watch mode
 
 | Email | Password | Role |
 |-------|----------|------|
-| aarav.mehta@organiq.co | demo123 | employee |
-| admin@organiq.co | demo123 | admin |
+| harsh.mali@asquarify.co | demo123 | employee |
+| bhargav.purohit@asquarify.co | demo123 | admin |

@@ -1,4 +1,4 @@
-import { Alert, Pressable, Text, View } from "react-native";
+import { Alert, Platform, Pressable, Text, View } from "react-native";
 import { Card } from "@/components/ui/Card";
 import { Header } from "@/components/ui/Header";
 import { ScreenContainer } from "@/components/ui/ScreenContainer";
@@ -7,31 +7,86 @@ import { Divider } from "@/components/ui/Divider";
 import { PayslipCard } from "@/components/shared/PayslipCard";
 import { HelpBanner } from "@/components/ui/HelpBanner";
 import { useHrmsData } from "@/context/HrmsDataContext";
+import { buildPayslipFileName, createPayslipPdf } from "@/utils/payslipPdf";
 
 const formatCurrency = (n: number) =>
-  `₹${n.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
+  `INR ${n.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
 
 export function PayslipScreen({ embedded = false }: { embedded?: boolean }) {
-  const { payslips } = useHrmsData();
+  const { currentEmployee, payslips } = useHrmsData();
   const ytdGross = payslips.reduce((sum, p) => sum + p.gross, 0);
   const ytdNet = payslips.reduce((sum, p) => sum + p.net, 0);
   const ytdTax = ytdGross - ytdNet;
 
   const onDownload = (id: string) => {
     const slip = payslips.find((p) => p.id === id);
-    Alert.alert(
-      "Download payslip",
-      slip
-        ? `Demo: ${slip.month} ${slip.year} (PDF) would download as ${id}.pdf`
-        : `Demo: would download ${id}.pdf`,
-    );
+    if (!slip) {
+      Alert.alert("Payslip unavailable", "Could not find this payslip. Please refresh and try again.");
+      return;
+    }
+
+    if (slip.status !== "paid") {
+      Alert.alert("Payslip processing", "This payslip will be available once payroll is marked paid.");
+      return;
+    }
+
+    if (Platform.OS !== "web") {
+      Alert.alert(
+        "Download available on web",
+        "PDF generation is ready for the web app. Native file saving needs Expo FileSystem/Sharing to be added.",
+      );
+      return;
+    }
+
+    const pdf = createPayslipPdf({ payslip: slip, employee: currentEmployee });
+    const blob = new Blob([pdf], { type: "application/pdf" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = buildPayslipFileName(slip, currentEmployee);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  const onPreview = (id: string) => {
+    const slip = payslips.find((p) => p.id === id);
+    if (!slip) {
+      Alert.alert("Payslip unavailable", "Could not find this payslip. Please refresh and try again.");
+      return;
+    }
+
+    if (slip.status !== "paid") {
+      Alert.alert("Payslip processing", "This payslip will be available once payroll is marked paid.");
+      return;
+    }
+
+    if (Platform.OS !== "web") {
+      Alert.alert(
+        "Preview available on web",
+        "PDF preview is ready for the web app. Native preview needs Expo FileSystem/Sharing to be added.",
+      );
+      return;
+    }
+
+    const pdf = createPayslipPdf({ payslip: slip, employee: currentEmployee });
+    const blob = new Blob([pdf], { type: "application/pdf" });
+    const url = URL.createObjectURL(blob);
+    const opened = window.open(url, "_blank", "noopener,noreferrer");
+    if (!opened) {
+      Alert.alert("Preview blocked", "Allow pop-ups for this site to preview the payslip PDF.");
+      URL.revokeObjectURL(url);
+      return;
+    }
+    window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
   };
 
   return (
     <ScreenContainer embedded={embedded}>
       <Header title="Payslips" subtitle="Your earnings, year to date" embedded={embedded} />
 
-      <HelpBanner text="Tap a payslip for breakdown. Use download for a demo PDF receipt." />
+      <HelpBanner text="Tap a payslip for breakdown. Preview or download paid monthly payslips as formatted PDFs." />
 
       <Pressable
         onPress={() =>
@@ -42,7 +97,7 @@ export function PayslipScreen({ embedded = false }: { embedded?: boolean }) {
               `Gross: ${formatCurrency(ytdGross)}`,
               `Tax & deductions: ${formatCurrency(ytdTax)}`,
               "",
-              "Demo: full tax break-up and Form 16 would open from here.",
+              "Monthly PDF payslips are available from the list below.",
             ].join("\n"),
           )
         }
@@ -50,7 +105,7 @@ export function PayslipScreen({ embedded = false }: { embedded?: boolean }) {
         className="active:opacity-90"
       >
         <Card variant="default">
-          <Text className="text-sm text-textMuted">Year to date · 2026 · tap for summary</Text>
+          <Text className="text-sm text-textMuted">Year to date - 2026 - tap for summary</Text>
           <Text className="mt-1 text-3xl font-semibold text-text">
             {formatCurrency(ytdNet)}
           </Text>
@@ -81,13 +136,13 @@ export function PayslipScreen({ embedded = false }: { embedded?: boolean }) {
         onAction={() =>
           Alert.alert(
             "Export payslips",
-            `Demo: would bundle ${payslips.length} PDFs and your YTD summary into a single zip.`,
+            "Use the download button on each paid month to get its formatted PDF payslip.",
           )
         }
       />
       <View className="gap-3">
         {payslips.map((p) => (
-          <PayslipCard key={p.id} payslip={p} onDownload={onDownload} />
+          <PayslipCard key={p.id} payslip={p} onDownload={onDownload} onPreview={onPreview} />
         ))}
       </View>
     </ScreenContainer>

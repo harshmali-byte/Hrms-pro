@@ -102,7 +102,7 @@ export function AdminSettingsScreen({ embedded = false }: { embedded?: boolean }
   const { signOut, user } = useAuth();
   const { resetDemoData } = useHrmsData();
   const [page, setPage] = useState<ConfigPageId>("hub");
-  const [hints, setHints] = useState({ company: "Organiq Pvt. Ltd.", locale: "India · INR" });
+  const [hints, setHints] = useState({ company: "Asquarify", locale: "India · INR" });
 
   const loadSummary = useCallback(() => {
     fetchConfigSummary()

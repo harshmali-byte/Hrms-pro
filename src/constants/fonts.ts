@@ -1,9 +1,7 @@
-/**
- * DM Sans family names — must match `useFonts` keys in App.tsx.
- */
+/** Plus Jakarta Sans — loaded in App.tsx */
 export const font = {
-  regular: "DMSans_400Regular",
-  medium: "DMSans_500Medium",
-  semibold: "DMSans_600SemiBold",
-  bold: "DMSans_700Bold",
+  regular: "PlusJakartaSans_400Regular",
+  medium: "PlusJakartaSans_500Medium",
+  semibold: "PlusJakartaSans_600SemiBold",
+  bold: "PlusJakartaSans_700Bold",
 } as const;

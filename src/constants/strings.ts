@@ -1,23 +1,23 @@
 /**
- * Centralized user-facing copy. Keeps screens free of hardcoded labels so
- * they can be re-skinned, translated, or refactored without touching UI.
+ * Centralized user-facing copy.
  */
+import { ASQUARIFY, DEMO_LOGINS } from "./company";
 
 export const APP = {
-  name: "HRMS",
-  tagline: "Human Resource Management System",
+  name: ASQUARIFY.displayName,
+  tagline: ASQUARIFY.tagline,
 };
 
 export const AUTH = {
-  welcome: "Welcome back",
-  subtitle: "Sign in to continue to your workspace",
+  welcome: `Welcome to ${ASQUARIFY.displayName}`,
+  subtitle: `${ASQUARIFY.headquarters} · Est. ${ASQUARIFY.founded}`,
   email: "Work email",
   password: "Password",
   signIn: "Sign in",
   selectRole: "Continue as",
   employee: "Employee",
   admin: "Admin",
-  demoHint: "Employee: aarav.mehta@organiq.co · Admin: admin@organiq.co · Password: demo123",
+  demoHint: `Employee: ${DEMO_LOGINS.employee} · Admin: ${DEMO_LOGINS.admin} · Password: ${DEMO_LOGINS.password}`,
   forgotPassword: "Forgot password?",
 };
 

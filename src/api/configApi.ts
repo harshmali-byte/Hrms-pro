@@ -96,7 +96,7 @@ export function updateDocumentTemplate(
     method: "PATCH",
     body: JSON.stringify(data),
   });
-}
+}   
 
 export function deleteDocumentTemplate(id: string) {
   return apiFetch<{ ok: boolean }>(`/config/templates/${id}`, { method: "DELETE" });

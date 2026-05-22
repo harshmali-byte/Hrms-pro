@@ -9,7 +9,7 @@ interface Props {
 
 export function HelpBanner({ text }: Props) {
   return (
-    <View className="mb-4 flex-row items-start rounded-lg border border-border bg-primary-soft px-3.5 py-3">
+    <View className="mb-5 flex-row items-start rounded-xl border border-primary/15 bg-primary-soft px-4 py-3.5">
       <Info size={iconSizes.sm} color={palette.primary} style={{ marginTop: 2 }} />
       <Text style={{ fontFamily: font.regular }} className="ml-2.5 flex-1 text-sm leading-5 text-text">
         {text}

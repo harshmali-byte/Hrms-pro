@@ -18,8 +18,14 @@ Or use your own PostgreSQL and set `server/.env` (`DATABASE_URL`).
 
 ```bash
 npm run server:install
-npm run server:seed
+npm run server:reset    # full reset + Asquarify team (first time or after email changes)
 npm run server:dev
+```
+
+If the database already has data and login returns **401**, sync demo users only:
+
+```bash
+npm run server:sync-users
 ```
 
 API runs at `http://localhost:3001`.
@@ -33,10 +39,10 @@ npx expo start
 
 **Demo logins**
 
-| Role     | Email                     | Password |
-| -------- | ------------------------- | -------- |
-| Employee | aarav.mehta@organiq.co    | demo123  |
-| Admin    | admin@organiq.co          | demo123  |
+| Role     | Email                      | Password |
+| -------- | -------------------------- | -------- |
+| Employee | harsh.mali@asquarify.co     | demo123  |
+| Admin    | bhargav.purohit@asquarify.co | demo123  |
 
 ### API URL on devices
 

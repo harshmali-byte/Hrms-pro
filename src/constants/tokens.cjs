@@ -1,30 +1,31 @@
 /**
- * Design tokens — HRMS reference (dark sidebar + light canvas).
+ * HRMS — modern SaaS tokens (reference: light shell, blue accent, white sidebar).
  */
 
 const colors = {
   primary: {
-    DEFAULT: "#4F6BED",
-    soft: "#E8EEFF",
-    dark: "#3D56C4",
+    DEFAULT: "#0066FF",
+    soft: "#E8F1FF",
+    dark: "#0052CC",
   },
-  accent: "#4F6BED",
+  accent: "#0066FF",
 
-  background: "#F0F2F5",
+  canvas: "#E8EFF9",
+  background: "#F8F9FA",
   surface: "#FFFFFF",
-  surfaceMuted: "#F4F6F8",
+  surfaceMuted: "#F1F3F5",
 
   sidebar: {
-    DEFAULT: "#1B2531",
-    hover: "#243040",
-    active: "#2A3544",
-    border: "#2D3A4A",
-    text: "#94A3B8",
+    DEFAULT: "#FFFFFF",
+    hover: "#F8F9FA",
+    active: "#0066FF",
+    border: "#E8ECF4",
+    text: "#64748B",
     textActive: "#FFFFFF",
-    accent: "#4F6BED",
+    accent: "#0066FF",
   },
 
-  text: "#1E293B",
+  text: "#0F172A",
   textMuted: "#64748B",
   textSubtle: "#94A3B8",
   textInverse: "#FFFFFF",
@@ -38,21 +39,23 @@ const colors = {
   info: { DEFAULT: "#3B82F6", soft: "#EFF6FF" },
 
   chart: {
-    blue: "#4F6BED",
+    blue: "#0066FF",
     green: "#10B981",
     orange: "#F97316",
     purple: "#8B5CF6",
     slate: "#64748B",
+    pink: "#EC4899",
   },
 };
 
 const radius = {
   none: "0px",
-  sm: "6px",
-  md: "8px",
-  lg: "12px",
-  xl: "16px",
-  "2xl": "20px",
+  sm: "8px",
+  md: "12px",
+  lg: "16px",
+  xl: "20px",
+  "2xl": "24px",
+  "3xl": "28px",
   full: "9999px",
 };
 
@@ -80,18 +83,24 @@ const spacing = {
 const fontSize = {
   xs: ["12px", { lineHeight: "16px" }],
   sm: ["14px", { lineHeight: "20px" }],
-  base: ["16px", { lineHeight: "24px" }],
-  lg: ["18px", { lineHeight: "26px", letterSpacing: "-0.01em" }],
-  xl: ["20px", { lineHeight: "28px", letterSpacing: "-0.015em" }],
+  base: ["15px", { lineHeight: "22px" }],
+  lg: ["18px", { lineHeight: "26px", letterSpacing: "-0.015em" }],
+  xl: ["20px", { lineHeight: "28px", letterSpacing: "-0.02em" }],
   "2xl": ["24px", { lineHeight: "32px", letterSpacing: "-0.02em" }],
-  "3xl": ["30px", { lineHeight: "38px", letterSpacing: "-0.02em" }],
+  "3xl": ["30px", { lineHeight: "38px", letterSpacing: "-0.025em" }],
 };
 
 const letterSpacing = {
   tight: "-0.02em",
   tighter: "-0.03em",
   normal: "0",
-  wide: "0.02em",
+  wide: "0.05em",
 };
 
-module.exports = { colors, radius, spacing, fontSize, letterSpacing };
+const boxShadow = {
+  shell: "0 8px 32px rgba(15, 23, 42, 0.08)",
+  card: "0 4px 16px rgba(15, 23, 42, 0.06)",
+  sm: "0 1px 3px rgba(15, 23, 42, 0.06)",
+};
+
+module.exports = { colors, radius, spacing, fontSize, letterSpacing, boxShadow };

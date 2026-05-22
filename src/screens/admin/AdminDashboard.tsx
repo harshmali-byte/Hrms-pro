@@ -29,7 +29,7 @@ export function AdminDashboard({ onNavigatePeople, onNavigateRequests }: Props) 
 
   return (
     <View>
-      <HelpBanner text="Summary updates live from personnel and leave data. Use the sidebar to open each module." />
+      <HelpBanner text="Asquarify team overview — 8 people across Leadership, Engineering, and Creative. Ne Family & Bakali delivery in flight." />
 
       <View className="flex-row flex-wrap gap-4">
         <DashboardKpiCard

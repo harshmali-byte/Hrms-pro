@@ -40,14 +40,14 @@ const iconColorByVariant: Record<Variant, string> = {
 };
 
 const containerBySize: Record<Size, string> = {
-  sm: "h-9 px-3.5 rounded-lg",
-  md: "h-11 px-5 rounded-xl",
-  lg: "h-12 px-6 rounded-xl",
+  sm: "h-9 px-4 rounded-full",
+  md: "h-11 px-5 rounded-full",
+  lg: "h-12 px-6 rounded-full",
 };
 
 const labelBySize: Record<Size, string> = {
   sm: "text-sm",
-  md: "text-base",
+  md: "text-sm",
   lg: "text-base",
 };
 

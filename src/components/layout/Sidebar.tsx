@@ -1,10 +1,10 @@
 import { Pressable, Text, View } from "react-native";
 import {
   Building2,
-  ChevronDown,
-  ChevronRight,
+  ChevronLeft,
+  HelpCircle,
   LogOut,
-  X,
+  Settings,
 } from "lucide-react-native";
 import { font } from "@/constants/fonts";
 import { palette, iconSizes, layout } from "@/constants/theme";
@@ -23,6 +23,17 @@ interface Props {
   collapsed?: boolean;
 }
 
+function groupBySection(items: ShellNavItem[]) {
+  const groups: { section: string; items: ShellNavItem[] }[] = [];
+  for (const item of items) {
+    const section = item.section ?? "Menu";
+    const last = groups[groups.length - 1];
+    if (last?.section === section) last.items.push(item);
+    else groups.push({ section, items: [item] });
+  }
+  return groups;
+}
+
 export function Sidebar({
   items,
   activeId,
@@ -34,109 +45,154 @@ export function Sidebar({
   collapsed = false,
 }: Props) {
   const width = collapsed ? layout.sidebarCollapsed : layout.sidebarWidth;
+  const groups = groupBySection(items);
 
   return (
     <View
-      style={{ width, backgroundColor: palette.sidebar }}
-      className="border-r border-sidebar-border"
+      style={{
+        width,
+        flexGrow: 0,
+        flexShrink: 0,
+        backgroundColor: palette.sidebar,
+        alignSelf: "stretch",
+      }}
+      className="h-full border-r border-sidebar-border"
     >
-      <View className="flex-row items-center gap-2 border-b border-sidebar-border px-4 py-5">
-        <View className="h-9 w-9 items-center justify-center rounded-lg bg-primary">
+      <View
+        className={`flex-row items-center border-b border-sidebar-border ${
+          collapsed ? "justify-center px-2 py-4" : "gap-2.5 px-4 py-4"
+        }`}
+      >
+        <View className="h-9 w-9 items-center justify-center rounded-xl bg-primary">
           <Building2 size={iconSizes.md} color={palette.textInverse} />
         </View>
         {!collapsed ? (
-          <Text style={{ fontFamily: font.bold }} className="text-lg text-textInverse">
-            {APP.name}
-          </Text>
-        ) : null}
-      </View>
-
-      <View className="flex-1 px-2 py-3">
-        {items.map((item) => {
-          const active = activeId === item.id;
-          const Icon = item.icon;
-          return (
-            <View key={item.id} className="mb-0.5">
-              <Pressable
-                onPress={() => onNavigate(item.id)}
-                className="flex-row items-center rounded-md px-3 py-2.5 active:opacity-90"
-                style={{
-                  backgroundColor: active ? palette.sidebarActive : "transparent",
-                  borderLeftWidth: active ? 3 : 0,
-                  borderLeftColor: active ? palette.primary : "transparent",
-                }}
+          <>
+            <View className="min-w-0 flex-1">
+              <Text
+                style={{ fontFamily: font.bold }}
+                className="text-base text-text"
+                numberOfLines={1}
               >
-                <Icon
-                  size={iconSizes.sm}
-                  color={active ? palette.sidebarTextActive : palette.sidebarText}
-                />
-                {!collapsed ? (
-                  <>
-                    <Text
-                      style={{ fontFamily: font.medium }}
-                      className={`ml-3 flex-1 text-sm ${
-                        active ? "text-textInverse" : "text-sidebar-text"
-                      }`}
-                    >
-                      {item.label}
-                    </Text>
-                    {item.children ? (
-                      <ChevronDown
-                        size={14}
-                        color={active ? palette.sidebarTextActive : palette.sidebarText}
-                      />
-                    ) : null}
-                  </>
-                ) : null}
-              </Pressable>
-              {active && item.children && !collapsed ? (
-                <View className="ml-9 mt-0.5 mb-1">
-                  {item.children.map((child, idx) => (
-                    <Pressable
-                      key={`${child.id}-${idx}`}
-                      onPress={() => onNavigate(item.id)}
-                      className="flex-row items-center py-1.5"
-                    >
-                      <ChevronRight size={12} color={palette.sidebarText} />
-                      <Text
-                        style={{ fontFamily: font.regular }}
-                        className="ml-1 text-xs text-sidebar-text"
-                      >
-                        {child.label}
-                      </Text>
-                    </Pressable>
-                  ))}
-                </View>
-              ) : null}
+                {APP.name}
+              </Text>
+              <Text style={{ fontFamily: font.regular }} className="text-[11px] text-textSubtle">
+                HR Workspace
+              </Text>
             </View>
-          );
-        })}
+            <Pressable className="h-8 w-8 items-center justify-center rounded-lg active:bg-sidebar-hover">
+              <ChevronLeft size={16} color={palette.textSubtle} />
+            </Pressable>
+          </>
+        ) : null}
       </View>
 
-      <View className="border-t border-sidebar-border p-3">
-        <View className="flex-row items-center rounded-lg bg-sidebar-hover px-2 py-2">
-          <Avatar name={userName} color={avatarColor} size="sm" />
-          {!collapsed ? (
-            <View className="ml-2 flex-1">
-              <Text style={{ fontFamily: font.semibold }} className="text-sm text-textInverse">
-                {userName}
+      <View className={`flex-1 ${collapsed ? "px-1.5 py-3" : "px-3 py-4"}`}>
+        {groups.map(({ section, items: sectionItems }) => (
+          <View key={section} className="mb-4">
+            {!collapsed ? (
+              <Text
+                style={{ fontFamily: font.semibold, letterSpacing: 0.8 }}
+                className="mb-2 px-2 text-[10px] uppercase text-textSubtle"
+              >
+                {section}
               </Text>
-              <Text style={{ fontFamily: font.regular }} className="text-xs text-sidebar-text">
-                {userRole}
+            ) : null}
+            {sectionItems.map((item) => {
+              const active = activeId === item.id;
+              const Icon = item.icon;
+              return (
+                <Pressable
+                  key={item.id}
+                  onPress={() => onNavigate(item.id)}
+                  className={`mb-1 flex-row items-center active:opacity-90 ${
+                    collapsed ? "justify-center rounded-xl py-2.5" : "rounded-xl px-3 py-2.5"
+                  }`}
+                  style={{ backgroundColor: active ? palette.primary : "transparent" }}
+                >
+                  <Icon
+                    size={iconSizes.sm}
+                    color={active ? palette.textInverse : palette.sidebarText}
+                  />
+                  {!collapsed ? (
+                    <>
+                      <Text
+                        style={{ fontFamily: active ? font.semibold : font.medium }}
+                        className={`ml-3 flex-1 text-sm ${
+                          active ? "text-textInverse" : "text-textMuted"
+                        }`}
+                        numberOfLines={1}
+                      >
+                        {item.label}
+                      </Text>
+                      {item.badge != null && item.badge > 0 ? (
+                        <View className="min-w-[20px] items-center justify-center rounded-full bg-danger px-1.5 py-0.5">
+                          <Text
+                            style={{ fontFamily: font.bold }}
+                            className="text-[10px] text-textInverse"
+                          >
+                            {item.badge > 9 ? "9+" : item.badge}
+                          </Text>
+                        </View>
+                      ) : null}
+                    </>
+                  ) : null}
+                </Pressable>
+              );
+            })}
+          </View>
+        ))}
+      </View>
+
+      <View className={`border-t border-sidebar-border ${collapsed ? "p-2" : "p-3"}`}>
+        {!collapsed ? (
+          <>
+            <Pressable className="mb-1 flex-row items-center rounded-xl px-3 py-2 active:bg-sidebar-hover">
+              <Settings size={iconSizes.sm} color={palette.sidebarText} />
+              <Text style={{ fontFamily: font.medium }} className="ml-3 text-sm text-textMuted">
+                Settings
               </Text>
-            </View>
-          ) : null}
-          {!collapsed ? (
-            <Pressable onPress={onSignOut} hitSlop={8}>
-              <X size={16} color={palette.sidebarText} />
             </Pressable>
-          ) : null}
-        </View>
-        {collapsed ? (
-          <Pressable onPress={onSignOut} className="mt-2 items-center py-2">
-            <LogOut size={iconSizes.sm} color={palette.sidebarText} />
-          </Pressable>
+            <Pressable className="mb-3 flex-row items-center rounded-xl px-3 py-2 active:bg-sidebar-hover">
+              <HelpCircle size={iconSizes.sm} color={palette.sidebarText} />
+              <Text style={{ fontFamily: font.medium }} className="ml-3 text-sm text-textMuted">
+                Help Center
+              </Text>
+            </Pressable>
+            <View className="mb-2 flex-row items-center rounded-xl bg-surfaceMuted px-2.5 py-2">
+              <Avatar name={userName} color={avatarColor} size="sm" />
+              <View className="ml-2.5 min-w-0 flex-1">
+                <Text
+                  style={{ fontFamily: font.semibold }}
+                  className="text-sm text-text"
+                  numberOfLines={1}
+                >
+                  {userName}
+                </Text>
+                <Text
+                  style={{ fontFamily: font.regular }}
+                  className="text-xs text-textMuted"
+                  numberOfLines={1}
+                >
+                  {userRole}
+                </Text>
+              </View>
+            </View>
+          </>
         ) : null}
+        <Pressable
+          onPress={onSignOut}
+          className={`flex-row items-center rounded-xl active:bg-danger-soft ${
+            collapsed ? "justify-center py-2.5" : "px-3 py-2.5"
+          }`}
+        >
+          <LogOut size={iconSizes.sm} color={palette.danger} />
+          {!collapsed ? (
+            <Text style={{ fontFamily: font.medium }} className="ml-3 text-sm text-danger">
+              Log out
+            </Text>
+          ) : null}
+        </Pressable>
       </View>
     </View>
   );

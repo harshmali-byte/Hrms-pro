@@ -6,19 +6,14 @@ interface Props {
   title: string;
   subtitle?: string;
   right?: ReactNode;
-  /** Page title is in TopBar — only show subtitle/actions */
+  /** Inside AppShell — title comes from PageHeader */
   embedded?: boolean;
 }
 
 export function Header({ title, subtitle, right, embedded = false }: Props) {
   if (embedded) {
-    if (!subtitle && !right) return null;
-    return (
-      <View className="mb-4 flex-row items-start justify-between">
-        <View className="flex-1 pr-3">{subtitle ? <Lead>{subtitle}</Lead> : null}</View>
-        {right ? <View>{right}</View> : null}
-      </View>
-    );
+    if (!right) return null;
+    return <View className="mb-4 flex-row justify-end">{right}</View>;
   }
 
   return (

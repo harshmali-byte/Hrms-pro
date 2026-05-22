@@ -1,9 +1,16 @@
 import bcrypt from "bcryptjs";
 import {
+  AttendanceDay,
   Employee,
+  EmployeeDocument,
   LeaveBalance,
   LeavePolicy,
+  LeaveRequest,
+  Payslip,
+  PrivacyPreference,
+  SupportTicket,
   User,
+  UserPreference,
 } from "../models/index.js";
 import { AppError, assertFound } from "../utils/errors.js";
 import { formatPostedDate, newId } from "../utils/dates.js";
@@ -91,7 +98,33 @@ export async function createEmployee(req, input) {
 export async function updateEmployee(req, id, patch) {
   const row = await Employee.findByPk(id);
   assertFound(row, "Employee");
-  await row.update(patch);
+  const allowed = [
+    "name",
+    "email",
+    "phone",
+    "role",
+    "department",
+    "reportsTo",
+    "status",
+    "location",
+    "employeeCode",
+  ];
+  const next = {};
+  for (const key of allowed) {
+    if (key in patch) next[key] = typeof patch[key] === "string" ? patch[key].trim() : patch[key];
+  }
+  if (next.email) {
+    next.email = next.email.toLowerCase();
+    const existing = await Employee.findOne({ where: { email: next.email } });
+    if (existing && existing.id !== id) throw new AppError("Email already in use", 409);
+  }
+  await row.update(next);
+  const userPatch = {};
+  if (next.name) userPatch.name = next.name;
+  if (next.email) userPatch.email = next.email;
+  if (Object.keys(userPatch).length > 0) {
+    await User.update(userPatch, { where: { employeeId: id } });
+  }
   await logAudit(req, {
     action: "update",
     resource: "employee",
@@ -105,7 +138,14 @@ export async function deleteEmployee(req, id) {
   const row = await Employee.findByPk(id);
   assertFound(row, "Employee");
   await User.destroy({ where: { employeeId: id } });
+  await AttendanceDay.destroy({ where: { employeeId: id } });
   await LeaveBalance.destroy({ where: { employeeId: id } });
+  await LeaveRequest.destroy({ where: { employeeId: id } });
+  await Payslip.destroy({ where: { employeeId: id } });
+  await EmployeeDocument.destroy({ where: { employeeId: id } });
+  await PrivacyPreference.destroy({ where: { employeeId: id } });
+  await SupportTicket.destroy({ where: { employeeId: id } });
+  await UserPreference.destroy({ where: { employeeId: id } });
   await row.destroy();
   await logAudit(req, {
     action: "delete",

@@ -12,10 +12,13 @@
     "server:dev": "npm run dev --prefix server",
     "server:seed": "npm run db:seed --prefix server",
     "server:seed-config": "npm run db:seed-config --prefix server",
+    "server:reset": "npm run db:reset --prefix server",
+    "server:sync-users": "npm run db:sync-users --prefix server",
     "db:up": "docker compose up -d postgres"
   },
   "dependencies": {
     "@expo-google-fonts/dm-sans": "^0.4.2",
+    "@expo-google-fonts/plus-jakarta-sans": "^0.4.2",
     "@expo/metro-runtime": "~3.2.3",
     "@react-native-async-storage/async-storage": "^1.23.1",
     "@react-navigation/bottom-tabs": "^6.6.1",

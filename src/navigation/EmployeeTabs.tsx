@@ -4,6 +4,7 @@ import { useHrmsData } from "@/context/HrmsDataContext";
 import { AppShell } from "@/components/layout/AppShell";
 import {
   employeeNavItems,
+  employeePageSubtitles,
   employeePageTitles,
   type EmployeeRouteId,
 } from "./shellNav";
@@ -48,9 +49,10 @@ export function EmployeeTabs() {
       activeId={route}
       onNavigate={(id) => setRoute(id as EmployeeRouteId)}
       pageTitle={employeePageTitles[route]}
+      pageSubtitle={employeePageSubtitles[route]}
       userName={currentEmployee?.name ?? user?.name ?? "Employee"}
       userRole="Employee"
-      avatarColor={currentEmployee?.avatarColor ?? "#4F6BED"}
+      avatarColor={currentEmployee?.avatarColor ?? "#0066FF"}
       onSignOut={() => void signOut()}
     >
       <EmployeeScreen route={route} setRoute={setRoute} />

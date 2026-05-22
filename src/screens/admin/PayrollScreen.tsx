@@ -31,7 +31,7 @@ const stepHint: Record<string, string> = {
 };
 
 export function PayrollScreen({ embedded = false }: { embedded?: boolean }) {
-  const { payroll, advancePayrollRun, employees, departments, payrollSummary } = useHrmsData();
+  const { payroll, advancePayrollRun, publishPayslips, employees, departments, payrollSummary } = useHrmsData();
   const { steps, runStatus } = payroll;
   const avgSalaryPerHead = payrollSummary?.avgSalaryPerHead ?? 142000;
   const monthlyOutflow =
@@ -40,9 +40,18 @@ export function PayrollScreen({ embedded = false }: { embedded?: boolean }) {
   const advanceRun = useCallback(async () => {
     const next = await advancePayrollRun();
     if (next?.runStatus === "Locked") {
-      Alert.alert("Payroll complete", "May cycle is locked. Bank file generated (demo).");
+      Alert.alert("Payroll complete", "May cycle is locked. You can now publish payslips.");
     }
   }, [advancePayrollRun]);
+
+  const publishRun = useCallback(async () => {
+    try {
+      const count = await publishPayslips();
+      Alert.alert("Payslips published", `${count} employee payslip(s) were saved and are available to download.`);
+    } catch (e) {
+      Alert.alert("Publish failed", e instanceof Error ? e.message : "Could not publish payslips.");
+    }
+  }, [publishPayslips]);
 
   const preview = useCallback(() => {
     Alert.alert(
@@ -55,7 +64,7 @@ export function PayrollScreen({ embedded = false }: { embedded?: boolean }) {
     <ScreenContainer embedded={embedded}>
       <Header title="Payroll" subtitle="May 2026 cycle" embedded={embedded} />
 
-      <HelpBanner text="Advance the payroll checklist step by step. Progress is saved on this device." />
+      <HelpBanner text="Advance the payroll checklist step by step. Progress and published payslips are saved to the backend." />
 
       <View className="flex-row flex-wrap gap-3">
         <StatCard
@@ -170,7 +179,11 @@ export function PayrollScreen({ embedded = false }: { embedded?: boolean }) {
             <Button label="Preview" variant="secondary" fullWidth onPress={preview} />
           </View>
           <View className="flex-1">
-            <Button label="Continue run" fullWidth onPress={() => void advanceRun()} />
+            <Button
+              label={runStatus === "Locked" ? "Publish payslips" : "Continue run"}
+              fullWidth
+              onPress={() => void (runStatus === "Locked" ? publishRun() : advanceRun())}
+            />
           </View>
         </View>
       </Card>

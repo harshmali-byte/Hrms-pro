@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
-import { Platform, View, ViewProps } from "react-native";
-import { palette } from "@/constants/theme";
+import { View, ViewProps } from "react-native";
+import { cardShadowStyle } from "@/constants/theme";
 
 interface Props extends ViewProps {
   children: ReactNode;
@@ -16,17 +16,6 @@ const variants: Record<NonNullable<Props["variant"]>, string> = {
   outline: "bg-transparent border border-border",
 };
 
-const shadowStyle = Platform.select({
-  ios: {
-    shadowColor: palette.shadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 12,
-  },
-  android: { elevation: 2 },
-  default: {},
-});
-
 export function Card({
   children,
   variant = "default",
@@ -37,11 +26,11 @@ export function Card({
   ...rest
 }: Props) {
   const padding = padded ? "p-5" : "";
-  const elevation = variant === "default" && elevated ? shadowStyle : undefined;
+  const elevation = variant === "default" && elevated ? cardShadowStyle : undefined;
 
   return (
     <View
-      className={`${variants[variant]} rounded-xl ${padding} ${className}`}
+      className={`${variants[variant]} rounded-2xl ${padding} ${className}`}
       style={[elevation, style]}
       {...rest}
     >

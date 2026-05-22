@@ -10,7 +10,7 @@ export const Announcement = sequelize.define(
     postedBy: { type: DataTypes.STRING(120), allowNull: false, field: "posted_by" },
     postedOn: { type: DataTypes.STRING(32), allowNull: false, field: "posted_on" },
     tag: {
-      type: DataTypes.ENUM("policy", "event", "celebration", "general"),
+      type: DataTypes.ENUM("policy", "event", "celebration", "general", "project"),
       allowNull: false,
       defaultValue: "general",
     },

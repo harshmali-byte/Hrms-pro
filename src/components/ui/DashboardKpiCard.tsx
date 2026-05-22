@@ -25,7 +25,7 @@ export function DashboardKpiCard({
     <Card className="min-w-[140px] flex-1" elevated>
       <View className="flex-row items-start justify-between">
         <View
-          className="h-11 w-11 items-center justify-center rounded-lg"
+          className="h-11 w-11 items-center justify-center rounded-xl"
           style={{ backgroundColor: palette.primarySoft }}
         >
           <Icon size={iconSizes.md} color={palette.primary} />

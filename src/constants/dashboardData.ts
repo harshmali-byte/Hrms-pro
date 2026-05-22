@@ -1,34 +1,32 @@
-/** Dashboard widgets — aligned with reference HRMS admin UI */
+/** Dashboard widgets — Asquarify team fallbacks */
 
 export const dashboardKpis = {
-  totalEmployees: { value: 1248, trend: "+12.5% from last month", positive: true },
-  newJoiners: { value: 32, trend: "+3.3% from last month", positive: true },
-  onLeave: { value: 45, trend: "-5.2% from last month", positive: false },
-  activeEmployees: { value: 1203, trend: "+10.1% from last month", positive: true },
+  totalEmployees: { value: 8, trend: "Core team · 2026", positive: true },
+  newJoiners: { value: 6, trend: "Since Jan 2026 launch", positive: true },
+  onLeave: { value: 0, trend: "All hands on deck", positive: true },
+  activeEmployees: { value: 8, trend: "Junagadh + remote", positive: true },
 };
 
 export const departmentEngagement = [
-  { label: "Finance", value: 22, color: "#4F6BED" },
-  { label: "Development", value: 35, color: "#10B981" },
-  { label: "BDE", value: 18, color: "#F97316" },
-  { label: "UI/Design", value: 15, color: "#8B5CF6" },
-  { label: "Others", value: 10, color: "#64748B" },
+  { label: "Engineering", value: 62, color: "#0066FF" },
+  { label: "Leadership", value: 25, color: "#8B5CF6" },
+  { label: "Creative", value: 13, color: "#F59E0B" },
 ];
 
 export const attendanceTrend = {
-  present: [28, 32, 30, 38, 42, 40, 45, 38, 44, 48],
-  absent: [12, 10, 14, 11, 9, 13, 10, 15, 11, 9],
+  present: [5, 6, 7, 6, 7, 8, 7, 8, 7, 8],
+  absent: [0, 1, 0, 1, 0, 0, 1, 0, 0, 0],
   labels: ["1", "5", "10", "15", "20", "25"],
 };
 
 export const upcomingEvents = [
-  { id: "E1", title: "Team Meeting", when: "Today, 10:00 AM" },
-  { id: "E2", title: "HR Policy Update", when: "Tomorrow, 2:00 PM" },
-  { id: "E3", title: "Training Session", when: "18 May, 11:00 AM" },
+  { id: "E1", title: "Ne Family — UAT review", when: "Thu 4 PM" },
+  { id: "E2", title: "Bakali harvest stand-up", when: "Mon 11 AM" },
+  { id: "E3", title: "Founders sync · Junagadh", when: "Wed 6 PM" },
 ];
 
 export const noticeBoard = [
-  { id: "N1", title: "Office will remain closed on 15th Aug", date: "12 May 2026" },
-  { id: "N2", title: "New Leave Policy is live", date: "10 May 2026" },
-  { id: "N3", title: "Q2 performance reviews start next week", date: "08 May 2026" },
+  { id: "N1", title: "Ne Family release window — 28 May", date: "15 May 2026" },
+  { id: "N2", title: "Bakali peak season hours", date: "01 Jun 2026" },
+  { id: "N3", title: "Hubstaff compliance — every Friday", date: "Ongoing" },
 ];

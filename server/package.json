@@ -9,7 +9,8 @@
     "db:sync": "node src/scripts/syncDb.js",
     "db:seed": "node src/scripts/seed.js",
     "db:seed-config": "node src/scripts/seedConfigOnly.js",
-    "db:reset": "node src/scripts/seed.js --force"
+    "db:reset": "node src/scripts/seed.js --force",
+    "db:sync-users": "node src/scripts/syncUsers.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

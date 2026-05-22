@@ -39,7 +39,7 @@ export function AttendanceScreen({ embedded = false }: { embedded?: boolean }) {
     <ScreenContainer embedded={embedded}>
       <Header title="Attendance" subtitle="Your clock-in history" embedded={embedded} />
 
-      <HelpBanner text="Check in when you start work and check out when you leave. Today’s row updates in real time." />
+      <HelpBanner text="Clock in/out here for HRMS attendance. Hubstaff tracks apps and activity in parallel — both summaries update through your work day." />
 
       <AttendanceWidget />
 
