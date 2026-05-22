@@ -21,4 +21,19 @@ router.get(
   }),
 );
 
+router.get(
+  "/widgets",
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const { getEmployeeDashboardWidgets, getAdminDashboardWidgets } = await import(
+      "../services/dashboardWidgetsService.js"
+    );
+    if (req.user.role === "admin") {
+      res.json(await getAdminDashboardWidgets());
+    } else {
+      res.json(await getEmployeeDashboardWidgets(req.user));
+    }
+  }),
+);
+
 export default router;

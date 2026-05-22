@@ -25,6 +25,7 @@ function AdminScreen({
     case "dashboard":
       return (
         <AdminDashboard
+          onNavigate={setRoute}
           onNavigatePeople={() => setRoute("people")}
           onNavigateRequests={() => setRoute("requests")}
         />

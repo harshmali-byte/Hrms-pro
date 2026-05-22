@@ -8,15 +8,24 @@ import { HelpBanner } from "@/components/ui/HelpBanner";
 import { DonutChart } from "@/components/charts/DonutChart";
 import { LineChart } from "@/components/charts/LineChart";
 import { Divider } from "@/components/ui/Divider";
+import { DashboardWidgetGrid } from "@/components/dashboard/DashboardWidgetGrid";
+import { SectionHeader } from "@/components/ui/SectionHeader";
 import { useHrmsData } from "@/context/HrmsDataContext";
+import type { AdminRouteId } from "@/navigation/shellNav";
 
 interface Props {
+  onNavigate?: (route: AdminRouteId) => void;
   onNavigatePeople?: () => void;
   onNavigateRequests?: () => void;
 }
 
-export function AdminDashboard({ onNavigatePeople, onNavigateRequests }: Props) {
-  const { dashboardStats, pendingLeaveCount, dashboardCharts } = useHrmsData();
+export function AdminDashboard({
+  onNavigate,
+  onNavigatePeople,
+  onNavigateRequests,
+}: Props) {
+  const { dashboardStats, pendingLeaveCount, dashboardCharts, dashboardWidgets } =
+    useHrmsData();
   const s = dashboardStats;
   const t = s.trends;
   const charts = dashboardCharts ?? {
@@ -31,6 +40,22 @@ export function AdminDashboard({ onNavigatePeople, onNavigateRequests }: Props) 
     <View>
       <HelpBanner text="Asquarify team overview — 8 people across Leadership, Engineering, and Creative. Ne Family & Bakali delivery in flight." />
 
+      {dashboardWidgets.length > 0 ? (
+        <>
+          <SectionHeader title="Team overview" />
+          <DashboardWidgetGrid
+            widgets={dashboardWidgets}
+            onAction={(target) => {
+              const route = target as AdminRouteId;
+              onNavigate?.(route);
+              if (route === "people") onNavigatePeople?.();
+              if (route === "requests") onNavigateRequests?.();
+            }}
+          />
+        </>
+      ) : null}
+
+      <SectionHeader title="Key metrics" />
       <View className="flex-row flex-wrap gap-4">
         <DashboardKpiCard
           label="Total Employees"

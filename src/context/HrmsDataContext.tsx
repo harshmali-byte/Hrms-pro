@@ -18,6 +18,7 @@ import {
   fetchBootstrap,
   fetchDashboardCharts,
   fetchDashboardStats,
+  fetchDashboardWidgets,
   fetchDepartments,
   fetchPayrollSummary,
   getPayslipsFromApi,
@@ -56,6 +57,7 @@ import type {
   PayrollSummary,
   Payslip,
 } from "@/types";
+import type { DashboardWidget } from "@/types/dashboard";
 
 export interface HrmsDataContextValue {
   isReady: boolean;
@@ -113,6 +115,8 @@ export interface HrmsDataContextValue {
 
   dashboardStats: DashboardStats;
   dashboardCharts: DashboardCharts | null;
+  dashboardWidgets: DashboardWidget[];
+  refreshDashboardWidgets: () => Promise<void>;
   announcements: Announcement[];
   holidays: Holiday[];
   attendanceHistory: AttendanceRecord[];
@@ -146,6 +150,17 @@ export function HrmsDataProvider({ children }: { children: ReactNode }) {
   const [attendanceHistory, setAttendanceHistory] = useState<AttendanceRecord[]>([]);
   const [departments, setDepartments] = useState<DepartmentStat[]>([]);
   const [payrollSummary, setPayrollSummary] = useState<PayrollSummary | null>(null);
+  const [dashboardWidgets, setDashboardWidgets] = useState<DashboardWidget[]>([]);
+
+  const refreshDashboardWidgets = useCallback(async () => {
+    if (!token) return;
+    try {
+      const res = await fetchDashboardWidgets();
+      setDashboardWidgets(res.widgets ?? []);
+    } catch {
+      /* keep previous widgets */
+    }
+  }, [token]);
 
   const loadAll = useCallback(async () => {
     if (!token) {
@@ -160,6 +175,7 @@ export function HrmsDataProvider({ children }: { children: ReactNode }) {
       setAttendanceHistory([]);
       setDepartments([]);
       setPayrollSummary(null);
+      setDashboardWidgets([]);
       setIsReady(true);
       setApiError(null);
       return;
@@ -169,10 +185,11 @@ export function HrmsDataProvider({ children }: { children: ReactNode }) {
     setApiError(null);
     const isAdmin = user?.role === "admin";
     try {
-      const [state, stats, charts, history, depts, summary, slips] = await Promise.all([
+      const [state, stats, charts, widgetsRes, history, depts, summary, slips] = await Promise.all([
         fetchBootstrap(),
         fetchDashboardStats().catch(() => null),
         isAdmin ? fetchDashboardCharts().catch(() => null) : Promise.resolve(null),
+        fetchDashboardWidgets().catch(() => ({ widgets: [] })),
         user?.employeeId
           ? fetchAttendanceHistory(14).catch(() => [] as AttendanceRecord[])
           : Promise.resolve([] as AttendanceRecord[]),
@@ -194,6 +211,7 @@ export function HrmsDataProvider({ children }: { children: ReactNode }) {
       setHolidays(state.holidays ?? []);
       setAttendanceHistory(history);
       setDashboardCharts(charts);
+      setDashboardWidgets(widgetsRes.widgets ?? []);
       setDepartments(depts);
       setPayrollSummary(summary);
       if (stats) setDashboardStatsRemote(stats);
@@ -239,13 +257,15 @@ export function HrmsDataProvider({ children }: { children: ReactNode }) {
     const next = await clockInApi();
     setAttendanceDay(next);
     void refreshAttendanceHistory();
-  }, [refreshAttendanceHistory]);
+    void refreshDashboardWidgets();
+  }, [refreshAttendanceHistory, refreshDashboardWidgets]);
 
   const clockOut = useCallback(async () => {
     const next = await clockOutApi();
     setAttendanceDay(next);
     void refreshAttendanceHistory();
-  }, [refreshAttendanceHistory]);
+    void refreshDashboardWidgets();
+  }, [refreshAttendanceHistory, refreshDashboardWidgets]);
 
   const isCheckedIn =
     segments.length > 0 && segments[segments.length - 1].out === null;
@@ -465,6 +485,8 @@ export function HrmsDataProvider({ children }: { children: ReactNode }) {
       publishPayslips,
       dashboardStats,
       dashboardCharts,
+      dashboardWidgets,
+      refreshDashboardWidgets,
       announcements,
       holidays,
       attendanceHistory,
@@ -506,6 +528,8 @@ export function HrmsDataProvider({ children }: { children: ReactNode }) {
       publishPayslips,
       dashboardStats,
       dashboardCharts,
+      dashboardWidgets,
+      refreshDashboardWidgets,
       announcements,
       holidays,
       attendanceHistory,

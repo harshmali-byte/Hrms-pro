@@ -13,6 +13,7 @@ import type {
   PayrollSummary,
   Payslip,
 } from "@/types";
+import type { DashboardWidgetsResponse } from "@/types/dashboard";
 import type { AttendanceSegment } from "@/utils/attendance";
 import { apiFetch } from "./client";
 
@@ -129,6 +130,10 @@ export async function fetchDashboardStats(): Promise<DashboardStats> {
 
 export async function fetchDashboardCharts(): Promise<DashboardCharts> {
   return apiFetch<DashboardCharts>("/dashboard/charts");
+}
+
+export async function fetchDashboardWidgets(): Promise<DashboardWidgetsResponse> {
+  return apiFetch<DashboardWidgetsResponse>("/dashboard/widgets");
 }
 
 export async function fetchDepartments(): Promise<DepartmentStat[]> {

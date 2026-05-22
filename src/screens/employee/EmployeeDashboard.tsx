@@ -27,6 +27,7 @@ import { font } from "@/constants/fonts";
 import { Divider } from "@/components/ui/Divider";
 import { HelpBanner } from "@/components/ui/HelpBanner";
 import { Headline, Kicker, LinkLabel } from "@/components/ui/Typography";
+import { DashboardWidgetGrid } from "@/components/dashboard/DashboardWidgetGrid";
 import { useHrmsData } from "@/context/HrmsDataContext";
 import { COMMON } from "@/constants/strings";
 
@@ -63,7 +64,8 @@ export function EmployeeDashboard({
   embedded?: boolean;
   onNavigate?: (route: EmployeeRouteId) => void;
 }) {
-  const { employees, currentEmployee, announcements, holidays } = useHrmsData();
+  const { employees, currentEmployee, announcements, holidays, dashboardWidgets } =
+    useHrmsData();
   const nextHoliday = holidays[0];
   const [sheet, setSheet] = useState<"holidays" | "directory" | "announcement" | null>(
     null,
@@ -123,6 +125,16 @@ export function EmployeeDashboard({
       </View>
 
       <HelpBanner text="Asquarify builds Ne Family (UK insurance) and Bakali (fresh mangoes) — clock in, track Hubstaff, and ship on time from Junagadh." />
+
+      {dashboardWidgets.length > 0 ? (
+        <>
+          <SectionHeader title="Your overview" />
+          <DashboardWidgetGrid
+            widgets={dashboardWidgets}
+            onAction={(target) => onNavigate?.(target as EmployeeRouteId)}
+          />
+        </>
+      ) : null}
 
       <View className={embedded ? "" : "mt-2"}>
         <AttendanceWidget />
