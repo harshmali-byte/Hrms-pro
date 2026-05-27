@@ -8,6 +8,7 @@ import { SectionHeader } from "@/components/ui/SectionHeader";
 import { Divider } from "@/components/ui/Divider";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { Button } from "@/components/ui/Button";
+import { DialogActions } from "@/components/ui/FormActions";
 import { PayslipCard } from "@/components/shared/PayslipCard";
 import { HelpBanner } from "@/components/ui/HelpBanner";
 import { useHrmsData } from "@/context/HrmsDataContext";
@@ -187,18 +188,21 @@ export function PayslipScreen({ embedded = false }: { embedded?: boolean }) {
         title={detailSlip ? `${detailSlip.month} ${detailSlip.year}` : "Payslip"}
         onClose={() => setDetailSlip(null)}
         footer={
-          detailSlip?.status === "paid" ? (
-            <View className="flex-row gap-2">
-              <View className="flex-1">
-                <Button label="Preview" variant="secondary" fullWidth onPress={() => previewPdf(detailSlip!)} />
-              </View>
-              <View className="flex-1">
-                <Button label="Download" fullWidth onPress={() => downloadPdf(detailSlip!)} />
-              </View>
-            </View>
-          ) : (
-            <Button label="Close" variant="secondary" fullWidth onPress={() => setDetailSlip(null)} />
-          )
+          <DialogActions>
+            {detailSlip?.status === "paid" ? (
+              <>
+                <Button
+                  label="Preview"
+                  variant="secondary"
+                  size="sm"
+                  onPress={() => previewPdf(detailSlip!)}
+                />
+                <Button label="Download" size="sm" onPress={() => downloadPdf(detailSlip!)} />
+              </>
+            ) : (
+              <Button label="Close" variant="secondary" size="sm" onPress={() => setDetailSlip(null)} />
+            )}
+          </DialogActions>
         }
       >
         {detailSlip ? (

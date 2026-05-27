@@ -1,11 +1,11 @@
 import { ReactNode } from "react";
-import { ActivityIndicator, Pressable, Text } from "react-native";
+import { ActivityIndicator, Pressable, Text, type ViewStyle } from "react-native";
 import type { LucideIcon } from "lucide-react-native";
 import { font } from "@/constants/fonts";
 import { palette, iconSizes } from "@/constants/theme";
 
-type Variant = "primary" | "secondary" | "ghost" | "danger";
-type Size = "sm" | "md" | "lg";
+type Variant = "primary" | "secondary" | "ghost" | "danger" | "dangerOutline";
+type Size = "xs" | "sm" | "md" | "lg";
 
 interface Props {
   label: string;
@@ -23,39 +23,58 @@ const containerByVariant: Record<Variant, string> = {
   secondary: "border border-border bg-surface active:bg-surfaceMuted",
   ghost: "bg-transparent active:bg-surfaceMuted",
   danger: "bg-danger active:opacity-90",
+  dangerOutline: "border border-danger/25 bg-dangerSoft active:opacity-90",
 };
 
 const labelByVariant: Record<Variant, string> = {
   primary: "text-textInverse",
-  secondary: "text-primary",
-  ghost: "text-text",
+  secondary: "text-text",
+  ghost: "text-textMuted",
   danger: "text-textInverse",
+  dangerOutline: "text-danger",
 };
 
 const iconColorByVariant: Record<Variant, string> = {
   primary: palette.textInverse,
-  secondary: palette.primary,
-  ghost: palette.text,
+  secondary: palette.text,
+  ghost: palette.textMuted,
   danger: palette.textInverse,
+  dangerOutline: palette.danger,
 };
 
 const containerBySize: Record<Size, string> = {
-  sm: "h-9 px-4 rounded-full",
-  md: "h-11 px-5 rounded-full",
-  lg: "h-12 px-6 rounded-full",
+  xs: "h-7 px-2.5 rounded-lg",
+  sm: "h-8 px-3 rounded-lg",
+  md: "h-9 px-4 rounded-lg",
+  lg: "h-10 px-5 rounded-xl",
 };
 
 const labelBySize: Record<Size, string> = {
-  sm: "text-sm",
+  xs: "text-xs",
+  sm: "text-xs",
   md: "text-sm",
-  lg: "text-base",
+  lg: "text-sm",
+};
+
+const iconSizeByButtonSize: Record<Size, number> = {
+  xs: iconSizes.xs,
+  sm: iconSizes.xs,
+  md: iconSizes.sm,
+  lg: iconSizes.sm,
+};
+
+const iconGapBySize: Record<Size, number> = {
+  xs: 4,
+  sm: 5,
+  md: 6,
+  lg: 6,
 };
 
 export function Button({
   label,
   onPress,
   variant = "primary",
-  size = "md",
+  size = "sm",
   icon: Icon,
   loading = false,
   disabled = false,
@@ -69,7 +88,10 @@ export function Button({
       disabled={isInactive}
       className={`flex-row items-center justify-center ${containerBySize[size]} ${containerByVariant[variant]} ${
         fullWidth ? "w-full" : ""
-      } ${isInactive ? "opacity-55" : ""}`}
+      } ${isInactive ? "opacity-50" : ""}`}
+      style={({ pressed }) =>
+        pressed && !isInactive ? ({ opacity: 0.92 } as ViewStyle) : undefined
+      }
     >
       {loading ? (
         <ActivityIndicator color={iconColorByVariant[variant]} size="small" />
@@ -77,9 +99,9 @@ export function Button({
         <>
           {Icon ? (
             <Icon
-              size={iconSizes.sm}
+              size={iconSizeByButtonSize[size]}
               color={iconColorByVariant[variant]}
-              style={{ marginRight: 8 }}
+              style={{ marginRight: iconGapBySize[size] }}
             />
           ) : null}
           <Text

@@ -47,6 +47,7 @@ import type { EmployeeRouteId } from "@/navigation/shellNav";
 import { HelpBanner } from "@/components/ui/HelpBanner";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { Button } from "@/components/ui/Button";
+import { FormActions } from "@/components/ui/FormActions";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import type {
@@ -511,8 +512,17 @@ export function ProfileScreen({
       <BottomSheet
         visible={section === "profile"}
         title="Edit profile"
+        desktopWidth="lg"
         onClose={() => setSection(null)}
-        footer={<Button label="Save profile" icon={Save} loading={saving} onPress={saveProfile} fullWidth />}
+        footer={
+          <FormActions
+            primaryLabel="Save profile"
+            primaryIcon={Save}
+            onPrimary={saveProfile}
+            primaryLoading={saving}
+            onSecondary={() => setSection(null)}
+          />
+        }
       >
         <View className="gap-3">
           <Input label="Full name" value={profileForm.name} onChangeText={(name) => setProfileForm((f) => ({ ...f, name }))} />
@@ -525,8 +535,17 @@ export function ProfileScreen({
       <BottomSheet
         visible={section === "documents"}
         title="My documents"
+        desktopWidth="lg"
         onClose={() => setSection(null)}
-        footer={<Button label={docForm.id ? "Update document" : "Add document"} icon={Plus} loading={saving} onPress={saveDocument} fullWidth />}
+        footer={
+          <FormActions
+            primaryLabel={docForm.id ? "Update document" : "Add document"}
+            primaryIcon={Plus}
+            onPrimary={saveDocument}
+            primaryLoading={saving}
+            onSecondary={() => setSection(null)}
+          />
+        }
       >
         <View className="gap-3">
           <Input label="Document title" value={docForm.title} onChangeText={(title) => setDocForm((f) => ({ ...f, title }))} />
@@ -557,11 +576,17 @@ export function ProfileScreen({
                     >
                       <Eye size={iconSizes.sm} color={palette.primary} />
                     </Pressable>
-                    <Button label="Edit" size="sm" variant="secondary" onPress={() => setDocForm({ ...doc })} />
+                    <Button label="Edit" size="xs" variant="secondary" onPress={() => setDocForm({ ...doc })} />
                   </View>
                 </View>
-                <View className="mt-3">
-                  <Button label="Delete" size="sm" variant="danger" icon={Trash2} onPress={() => removeDocument(doc)} />
+                <View className="mt-3 flex-row justify-end">
+                  <Button
+                    label="Delete"
+                    size="xs"
+                    variant="dangerOutline"
+                    icon={Trash2}
+                    onPress={() => removeDocument(doc)}
+                  />
                 </View>
               </View>
             ))
@@ -573,7 +598,15 @@ export function ProfileScreen({
         visible={section === "privacy"}
         title="Privacy & security"
         onClose={() => setSection(null)}
-        footer={<Button label="Save security" icon={Save} loading={saving} onPress={savePrivacy} fullWidth />}
+        footer={
+          <FormActions
+            primaryLabel="Save security"
+            primaryIcon={Save}
+            onPrimary={savePrivacy}
+            primaryLoading={saving}
+            onSecondary={() => setSection(null)}
+          />
+        }
       >
         <View className="gap-3">
           <OptionRow
@@ -593,8 +626,17 @@ export function ProfileScreen({
       <BottomSheet
         visible={section === "support"}
         title="Help & support"
+        desktopWidth="lg"
         onClose={() => setSection(null)}
-        footer={<Button label={ticketForm.id ? "Update ticket" : "Create ticket"} icon={Plus} loading={saving} onPress={saveTicket} fullWidth />}
+        footer={
+          <FormActions
+            primaryLabel={ticketForm.id ? "Update ticket" : "Create ticket"}
+            primaryIcon={Plus}
+            onPrimary={saveTicket}
+            primaryLoading={saving}
+            onSecondary={() => setSection(null)}
+          />
+        }
       >
         <View className="gap-3">
           <Input label="Subject" value={ticketForm.subject} onChangeText={(subject) => setTicketForm((f) => ({ ...f, subject }))} />
@@ -619,10 +661,16 @@ export function ProfileScreen({
                       <Badge label={titleCase(ticket.status)} tone={ticket.status === "resolved" ? "success" : "info"} />
                     </View>
                   </View>
-                  <Button label="Edit" size="sm" variant="secondary" onPress={() => setTicketForm({ ...ticket })} />
+                  <Button label="Edit" size="xs" variant="secondary" onPress={() => setTicketForm({ ...ticket })} />
                 </View>
-                <View className="mt-3">
-                  <Button label="Delete" size="sm" variant="danger" icon={Trash2} onPress={() => removeTicket(ticket)} />
+                <View className="mt-3 flex-row justify-end">
+                  <Button
+                    label="Delete"
+                    size="xs"
+                    variant="dangerOutline"
+                    icon={Trash2}
+                    onPress={() => removeTicket(ticket)}
+                  />
                 </View>
               </View>
             ))
@@ -634,7 +682,15 @@ export function ProfileScreen({
         visible={section === "settings"}
         title="Settings"
         onClose={() => setSection(null)}
-        footer={<Button label="Save settings" icon={Save} loading={saving} onPress={saveSettings} fullWidth />}
+        footer={
+          <FormActions
+            primaryLabel="Save settings"
+            primaryIcon={Save}
+            onPrimary={saveSettings}
+            primaryLoading={saving}
+            onSecondary={() => setSection(null)}
+          />
+        }
       >
         <View className="gap-3">
           <Input label="Language" value={settingsForm.language} onChangeText={(language) => setSettingsForm((f) => ({ ...f, language }))} />

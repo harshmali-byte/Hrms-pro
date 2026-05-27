@@ -9,6 +9,7 @@ import { ScreenContainer } from "@/components/ui/ScreenContainer";
 import { Header } from "@/components/ui/Header";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { Button } from "@/components/ui/Button";
+import { FormActions } from "@/components/ui/FormActions";
 import { Input } from "@/components/ui/Input";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LeaveBalanceCard } from "@/components/shared/LeaveBalanceCard";
@@ -171,7 +172,13 @@ export function LeaveScreen({ embedded = false }: { embedded?: boolean }) {
         visible={applyOpen}
         title="Apply for leave"
         onClose={() => setApplyOpen(false)}
-        footer={<Button label="Submit request" fullWidth onPress={() => void submit()} />}
+        footer={
+          <FormActions
+            primaryLabel="Submit request"
+            onPrimary={() => void submit()}
+            onSecondary={() => setApplyOpen(false)}
+          />
+        }
       >
         <Text className="mb-2 text-sm font-medium text-textMuted">Leave type</Text>
         <View className="mb-4 flex-row flex-wrap gap-2">

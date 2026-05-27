@@ -174,17 +174,13 @@ export function PayrollScreen({ embedded = false }: { embedded?: boolean }) {
           ))}
         </View>
 
-        <View className="mt-4 flex-row gap-2">
-          <View className="flex-1">
-            <Button label="Preview" variant="secondary" fullWidth onPress={preview} />
-          </View>
-          <View className="flex-1">
-            <Button
-              label={runStatus === "Locked" ? "Publish payslips" : "Continue run"}
-              fullWidth
-              onPress={() => void (runStatus === "Locked" ? publishRun() : advanceRun())}
-            />
-          </View>
+        <View className="mt-4 flex-row flex-wrap justify-end gap-2">
+          <Button label="Preview" variant="secondary" size="sm" onPress={preview} />
+          <Button
+            label={runStatus === "Locked" ? "Publish payslips" : "Continue run"}
+            size="sm"
+            onPress={() => void (runStatus === "Locked" ? publishRun() : advanceRun())}
+          />
         </View>
       </Card>
 

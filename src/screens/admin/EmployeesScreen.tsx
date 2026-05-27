@@ -7,6 +7,7 @@ import { ScreenContainer } from "@/components/ui/ScreenContainer";
 import { Header } from "@/components/ui/Header";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { FormActions } from "@/components/ui/FormActions";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { HelpBanner } from "@/components/ui/HelpBanner";
 import { EmployeeListItem } from "@/components/shared/EmployeeListItem";
@@ -240,10 +241,18 @@ export function EmployeesScreen({ embedded = false }: { embedded?: boolean }) {
       </View>
 
       <BottomSheet
+        desktopWidth="lg"
         visible={addOpen}
         title="Add employee"
         onClose={() => setAddOpen(false)}
-        footer={<Button label="Save employee" fullWidth loading={saving} onPress={() => void submitAdd()} />}
+        footer={
+          <FormActions
+            primaryLabel="Save employee"
+            onPrimary={() => void submitAdd()}
+            primaryLoading={saving}
+            onSecondary={() => setAddOpen(false)}
+          />
+        }
       >
         <View className="gap-3">
           <Input label="Full name" value={name} onChangeText={setName} placeholder="Jane Doe" />
@@ -265,10 +274,19 @@ export function EmployeesScreen({ embedded = false }: { embedded?: boolean }) {
       </BottomSheet>
 
       <BottomSheet
+        desktopWidth="lg"
         visible={selected !== null}
         title={selected ? `Edit ${selected.name}` : "Employee"}
         onClose={() => setSelected(null)}
-        footer={<Button label="Save changes" icon={Save} fullWidth loading={saving} onPress={() => void saveSelected()} />}
+        footer={
+          <FormActions
+            primaryLabel="Save changes"
+            primaryIcon={Save}
+            onPrimary={() => void saveSelected()}
+            primaryLoading={saving}
+            onSecondary={() => setSelected(null)}
+          />
+        }
       >
         {selected ? (
           <>
@@ -314,7 +332,16 @@ export function EmployeesScreen({ embedded = false }: { embedded?: boolean }) {
                 })}
               </View>
               <InfoRow label="Joined" value={selected.joinedOn} />
-              <Button label="Delete employee" icon={Trash2} variant="danger" fullWidth loading={saving} onPress={removeSelected} />
+              <View className="mt-2 flex-row justify-end border-t border-border pt-4">
+                <Button
+                  label="Delete employee"
+                  icon={Trash2}
+                  variant="dangerOutline"
+                  size="sm"
+                  loading={saving}
+                  onPress={removeSelected}
+                />
+              </View>
             </View>
           </>
         ) : null}

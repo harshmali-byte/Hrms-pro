@@ -14,6 +14,7 @@ import { Divider } from "@/components/ui/Divider";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { FormActions } from "@/components/ui/FormActions";
 import { HelpBanner } from "@/components/ui/HelpBanner";
 import { ConfigBackBar } from "./ConfigBackBar";
 import { font } from "@/constants/fonts";
@@ -182,6 +183,18 @@ export function TemplatesConfig({ onBack }: { onBack: () => void }) {
           resetForm();
         }}
         title={edit ? "Edit template" : "New template"}
+        desktopWidth="lg"
+        footer={
+          <FormActions
+            primaryLabel={edit ? "Save template" : "Create template"}
+            onPrimary={() => void saveTemplate()}
+            primaryLoading={saving}
+            onSecondary={() => {
+              setShowEditor(false);
+              resetForm();
+            }}
+          />
+        }
       >
         <View className="gap-3">
           <Input label="Name" value={name} onChangeText={setName} />
@@ -208,12 +221,6 @@ export function TemplatesConfig({ onBack }: { onBack: () => void }) {
           </View>
           <Input label="Version" value={version} onChangeText={setVersion} />
           <Input label="Description" value={description} onChangeText={setDescription} multiline />
-          <Button
-            label={edit ? "Save template" : "Create template"}
-            fullWidth
-            loading={saving}
-            onPress={() => void saveTemplate()}
-          />
         </View>
       </BottomSheet>
     </ScreenContainer>

@@ -35,6 +35,7 @@ import { AnnouncementCard } from "@/components/shared/AnnouncementCard";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { DialogActions } from "@/components/ui/FormActions";
 import { Divider } from "@/components/ui/Divider";
 import { HelpBanner } from "@/components/ui/HelpBanner";
 import { Headline, Kicker, LinkLabel } from "@/components/ui/Typography";
@@ -83,6 +84,7 @@ export function EmployeeDashboard({ embedded = false }: { embedded?: boolean }) 
     notifications,
     employeeTemplates,
     markNotificationRead,
+    markAllNotificationsRead,
     reload,
   } = useHrmsData();
 
@@ -320,25 +322,23 @@ export function EmployeeDashboard({ embedded = false }: { embedded?: boolean }) 
             <Text style={{ fontFamily: font.regular }} className="text-sm text-text">
               {selectedEmployee.phone}
             </Text>
-            <View className="mt-4 flex-row gap-2">
-              <View className="flex-1">
+            <View className="mt-4">
+              <DialogActions>
                 <Button
                   label="Email"
                   icon={Mail}
                   variant="secondary"
-                  fullWidth
+                  size="sm"
                   onPress={() => contactEmployee(selectedEmployee, "email")}
                 />
-              </View>
-              <View className="flex-1">
                 <Button
                   label="Call"
                   icon={Phone}
                   variant="secondary"
-                  fullWidth
+                  size="sm"
                   onPress={() => contactEmployee(selectedEmployee, "phone")}
                 />
-              </View>
+              </DialogActions>
             </View>
           </>
         ) : null}
@@ -349,14 +349,16 @@ export function EmployeeDashboard({ embedded = false }: { embedded?: boolean }) 
         title="Health & benefits"
         onClose={() => setSheet(null)}
         footer={
-          <Button
-            label="Open documents"
-            fullWidth
-            onPress={() => {
-              setSheet(null);
-              nav.navigate("profile", { profileSection: "documents" });
-            }}
-          />
+          <DialogActions>
+            <Button
+              label="Open documents"
+              size="sm"
+              onPress={() => {
+                setSheet(null);
+                nav.navigate("profile", { profileSection: "documents" });
+              }}
+            />
+          </DialogActions>
         }
       >
         <Text style={{ fontFamily: font.regular }} className="text-sm leading-6 text-text">
@@ -370,27 +372,42 @@ export function EmployeeDashboard({ embedded = false }: { embedded?: boolean }) 
         ) : null}
       </BottomSheet>
 
-      <BottomSheet visible={sheet === "reimburse"} title="Reimbursements" onClose={() => setSheet(null)}>
+      <BottomSheet
+        visible={sheet === "reimburse"}
+        title="Reimbursements"
+        onClose={() => setSheet(null)}
+        footer={
+          <DialogActions>
+            <Button
+              label="Open support"
+              size="sm"
+              onPress={() => {
+                setSheet(null);
+                nav.navigate("profile", { profileSection: "support" });
+              }}
+            />
+          </DialogActions>
+        }
+      >
         <Text style={{ fontFamily: font.regular }} className="text-sm leading-6 text-text">
           Submit expenses through Help & support on your profile. Finance approves against project codes
           (Ne Family, Bakali, internal).
         </Text>
-        <View className="mt-4">
-          <Button
-            label="Open support"
-            fullWidth
-            onPress={() => {
-              setSheet(null);
-              nav.navigate("profile", { profileSection: "support" });
-            }}
-          />
-        </View>
       </BottomSheet>
 
       <BottomSheet
         visible={sheet === "notifications"}
         title="Notifications"
         onClose={() => setSheet(null)}
+        footer={
+          notifications.some((n) => !n.read) ? (
+            <Pressable onPress={markAllNotificationsRead} className="py-2">
+              <Text style={{ fontFamily: font.semibold }} className="text-center text-sm text-primary">
+                Mark all as read
+              </Text>
+            </Pressable>
+          ) : undefined
+        }
       >
         {notifications.length === 0 ? (
           <Text style={{ fontFamily: font.regular }} className="text-sm text-textMuted">

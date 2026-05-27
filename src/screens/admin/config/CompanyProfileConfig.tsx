@@ -56,7 +56,9 @@ export function CompanyProfileConfig({ onBack }: { onBack: () => void }) {
           autoCapitalize="none"
         />
         <Input label="Tax ID / GSTIN" value={form.taxId ?? ""} onChangeText={(v) => set("taxId", v)} />
-        <Button label="Save changes" fullWidth loading={saving} onPress={() => void save()} />
+        <View className="mt-4 flex-row justify-end">
+          <Button label="Save changes" size="sm" loading={saving} onPress={() => void save()} />
+        </View>
       </View>
     </ScreenContainer>
   );

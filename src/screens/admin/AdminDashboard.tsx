@@ -14,6 +14,7 @@ import { DashboardWidgetGrid } from "@/components/dashboard/DashboardWidgetGrid"
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { Button } from "@/components/ui/Button";
+import { DialogActions } from "@/components/ui/FormActions";
 import { Badge } from "@/components/ui/Badge";
 import { EmployeeListItem } from "@/components/shared/EmployeeListItem";
 import { useHrmsData } from "@/context/HrmsDataContext";
@@ -447,12 +448,9 @@ function DetailSheets({
         title={detail.title}
         onClose={onClose}
         footer={
-          <Button
-            label="Close"
-            variant="secondary"
-            fullWidth
-            onPress={onClose}
-          />
+          <DialogActions>
+            <Button label="Close" variant="secondary" size="sm" onPress={onClose} />
+          </DialogActions>
         }
       >
         <Badge label={isEvent ? "Event" : "Notice"} tone={isEvent ? "primary" : "warning"} />
@@ -473,14 +471,16 @@ function DetailSheets({
         title="Attendance overview"
         onClose={onClose}
         footer={
-          <Button
-            label="View personnel"
-            fullWidth
-            onPress={() => {
-              onClose();
-              adminNav.navigate("people");
-            }}
-          />
+          <DialogActions>
+            <Button
+              label="View personnel"
+              size="sm"
+              onPress={() => {
+                onClose();
+                adminNav.navigate("people");
+              }}
+            />
+          </DialogActions>
         }
       >
         <Text style={{ fontFamily: font.regular }} className="text-sm leading-6 text-textMuted">
@@ -528,14 +528,16 @@ function DetailSheets({
         title="Clocked in now"
         onClose={onClose}
         footer={
-          <Button
-            label="Open personnel"
-            fullWidth
-            onPress={() => {
-              onClose();
-              adminNav.navigate("people");
-            }}
-          />
+          <DialogActions>
+            <Button
+              label="Open personnel"
+              size="sm"
+              onPress={() => {
+                onClose();
+                adminNav.navigate("people");
+              }}
+            />
+          </DialogActions>
         }
       >
         {detail.loading ? (
@@ -563,7 +565,9 @@ function DetailSheets({
         title="Active projects"
         onClose={onClose}
         footer={
-          <Button label="Close" variant="secondary" fullWidth onPress={onClose} />
+          <DialogActions>
+            <Button label="Close" variant="secondary" size="sm" onPress={onClose} />
+          </DialogActions>
         }
       >
         {ASQUARIFY_PROJECTS.map((p) => (
@@ -598,22 +602,24 @@ function DetailSheets({
         title={detail.title}
         onClose={onClose}
         footer={
-          detail.route ? (
-            <Button
-              label={detail.actionLabel ?? "Continue"}
-              fullWidth
-              onPress={() => {
-                onClose();
-                if (detail.route === "people" && showOnLeave) {
-                  adminNav.navigate("people", { peopleStatus: "onLeave" });
-                } else if (detail.route) {
-                  adminNav.navigate(detail.route);
-                }
-              }}
-            />
-          ) : (
-            <Button label="Close" variant="secondary" fullWidth onPress={onClose} />
-          )
+          <DialogActions>
+            {detail.route ? (
+              <Button
+                label={detail.actionLabel ?? "Continue"}
+                size="sm"
+                onPress={() => {
+                  onClose();
+                  if (detail.route === "people" && showOnLeave) {
+                    adminNav.navigate("people", { peopleStatus: "onLeave" });
+                  } else if (detail.route) {
+                    adminNav.navigate(detail.route);
+                  }
+                }}
+              />
+            ) : (
+              <Button label="Close" variant="secondary" size="sm" onPress={onClose} />
+            )}
+          </DialogActions>
         }
       >
         <Text style={{ fontFamily: font.regular }} className="text-base leading-6 text-text">

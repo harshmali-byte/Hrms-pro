@@ -48,7 +48,9 @@ export function LocaleConfig({ onBack }: { onBack: () => void }) {
         <Input label="Currency code" value={prefs.currency} onChangeText={(v) => set("currency", v)} />
         <Input label="Locale" value={prefs.locale} onChangeText={(v) => set("locale", v)} />
         <Input label="Timezone" value={prefs.timezone} onChangeText={(v) => set("timezone", v)} />
-        <Button label="Save" fullWidth loading={saving} onPress={() => void save()} />
+        <View className="mt-4 flex-row justify-end">
+          <Button label="Save" size="sm" loading={saving} onPress={() => void save()} />
+        </View>
       </View>
     </ScreenContainer>
   );

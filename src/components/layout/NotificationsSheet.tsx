@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { ChevronRight } from "lucide-react-native";
+import { Inbox } from "lucide-react-native";
 import { useHrmsData } from "@/context/HrmsDataContext";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { font } from "@/constants/fonts";
 import { palette, iconSizes } from "@/constants/theme";
-import { Inbox } from "lucide-react-native";
 import type { HrmsNotification } from "@/types";
 import { NotificationDetailModal } from "./NotificationDetailModal";
 
@@ -24,8 +24,6 @@ export function NotificationsSheet({ visible, onClose }: Props) {
     if (!n.read) markNotificationRead(n.id);
     setSelected(n);
   };
-
-  const closeDetail = () => setSelected(null);
 
   return (
     <>
@@ -87,7 +85,7 @@ export function NotificationsSheet({ visible, onClose }: Props) {
       <NotificationDetailModal
         notification={selected}
         visible={selected != null}
-        onClose={closeDetail}
+        onClose={() => setSelected(null)}
       />
     </>
   );

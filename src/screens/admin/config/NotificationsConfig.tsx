@@ -69,7 +69,9 @@ export function NotificationsConfig({ onBack }: { onBack: () => void }) {
         ))}
       </Card>
       <View className="mt-4">
-        <Button label="Save preferences" fullWidth loading={saving} onPress={() => void save()} />
+        <View className="mt-4 flex-row justify-end">
+          <Button label="Save preferences" size="sm" loading={saving} onPress={() => void save()} />
+        </View>
       </View>
     </ScreenContainer>
   );

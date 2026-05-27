@@ -109,35 +109,18 @@ export function LeaveRequestCard({
       </Pressable>
 
       {showActions && request.status === "pending" ? (
-        <View className="mt-4 flex-row gap-2">
-          <View className="flex-1">
-            <Button
-              label="Reject"
-              variant="ghost"
-              size="sm"
-              fullWidth
-              onPress={() => onReject?.(request.id)}
-            />
-          </View>
-          <View className="flex-1">
-            <Button
-              label="Approve"
-              variant="primary"
-              size="sm"
-              fullWidth
-              onPress={() => onApprove?.(request.id)}
-            />
-          </View>
+        <View className="mt-4 flex-row justify-end gap-2">
+          <Button label="Reject" variant="secondary" size="sm" onPress={() => onReject?.(request.id)} />
+          <Button label="Approve" size="sm" onPress={() => onApprove?.(request.id)} />
         </View>
       ) : null}
 
       {onCancel && request.status === "pending" ? (
-        <View className="mt-3">
+        <View className="mt-3 flex-row justify-end">
           <Button
             label="Withdraw request"
-            variant="ghost"
+            variant="dangerOutline"
             size="sm"
-            fullWidth
             onPress={() => onCancel(request.id)}
           />
         </View>

@@ -169,13 +169,10 @@ export function LeavePoliciesConfig({ onBack }: { onBack: () => void }) {
               onChangeText={(v) => setEdit({ ...edit, description: v })}
               multiline
             />
-            <Button label="Save policy" fullWidth loading={saving} onPress={() => void saveEdit()} />
-            <Button
-              label="Sync balances to employees"
-              variant="secondary"
-              fullWidth
-              onPress={syncBalances}
-            />
+            <View className="mt-4 flex-row flex-wrap justify-end gap-2">
+              <Button label="Sync balances" variant="secondary" size="sm" onPress={syncBalances} />
+              <Button label="Save policy" size="sm" loading={saving} onPress={() => void saveEdit()} />
+            </View>
           </View>
         ) : null}
       </BottomSheet>

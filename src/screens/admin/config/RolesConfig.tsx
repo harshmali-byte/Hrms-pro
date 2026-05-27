@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/Card";
 import { Divider } from "@/components/ui/Divider";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { Button } from "@/components/ui/Button";
+import { FormActions } from "@/components/ui/FormActions";
 import { HelpBanner } from "@/components/ui/HelpBanner";
 import { ConfigBackBar } from "./ConfigBackBar";
 import { font } from "@/constants/fonts";
@@ -88,7 +89,21 @@ export function RolesConfig({ onBack }: { onBack: () => void }) {
         ))}
       </Card>
 
-      <BottomSheet visible={edit !== null} onClose={() => setEdit(null)} title={edit?.name ?? "Role"}>
+      <BottomSheet
+        visible={edit !== null}
+        onClose={() => setEdit(null)}
+        title={edit?.name ?? "Role"}
+        footer={
+          edit ? (
+            <FormActions
+              primaryLabel="Save permissions"
+              onPrimary={() => void save()}
+              primaryLoading={saving}
+              onSecondary={() => setEdit(null)}
+            />
+          ) : undefined
+        }
+      >
         {edit ? (
           <View className="gap-2">
             <Text style={{ fontFamily: font.regular }} className="mb-2 text-sm text-textMuted">
@@ -117,7 +132,6 @@ export function RolesConfig({ onBack }: { onBack: () => void }) {
                   ))}
               </View>
             ))}
-            <Button label="Save permissions" fullWidth loading={saving} onPress={() => void save()} />
           </View>
         ) : null}
       </BottomSheet>
